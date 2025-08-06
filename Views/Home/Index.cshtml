@@ -1,0 +1,382 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+
+}
+
+<style>
+    .hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 4rem 0;
+        margin-top: -1rem;
+    }
+
+    .hero-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+        align-items: center;
+    }
+
+    .hero-content h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        font-weight: 300;
+    }
+
+    .hero-content p {
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+    }
+
+    .welcome-badge {
+        background: rgba(255,255,255,0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        display: inline-block;
+        margin-bottom: 2rem;
+        font-size: 0.9rem;
+    }
+
+    .hero-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .btn-hero-primary {
+        background: white;
+        color: #4a90e2;
+        font-weight: 600;
+        padding: 1rem 2rem;
+        border-radius: 50px;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        transition: all 0.3s;
+    }
+
+    .btn-hero-secondary {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: 2px solid rgba(255,255,255,0.3);
+        padding: 1rem 2rem;
+        border-radius: 50px;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        transition: all 0.3s;
+    }
+
+    .btn-hero-primary:hover, .btn-hero-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .hero-visual {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .skill-icon {
+        width: 200px;
+        height: 200px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+        backdrop-filter: blur(10px);
+    }
+
+    .services {
+        padding: 4rem 0;
+        background: white;
+    }
+
+    .services-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .services-header h2 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: #333;
+    }
+
+    .services-header p {
+        font-size: 1.1rem;
+        color: #666;
+    }
+
+    .service-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        transition: transform 0.3s;
+        height: 100%;
+    }
+
+    .service-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .service-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: white;
+    }
+
+    .service-icon.technical { background: linear-gradient(135deg, #4a90e2, #357abd); }
+    .service-icon.soft { background: linear-gradient(135deg, #27ae60, #1e8449); }
+    .service-icon.leadership { background: linear-gradient(135deg, #f39c12, #d68910); }
+    .service-icon.assessment { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+    .service-icon.learning { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+    .service-icon.analytics { background: linear-gradient(135deg, #16a085, #138d75); }
+
+    .service-card h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: #333;
+    }
+
+    .service-card p {
+        color: #666;
+        margin-bottom: 1.5rem;
+    }
+
+    .service-features {
+        list-style: none;
+        text-align: left;
+        padding-left: 0;
+    }
+
+    .service-features li {
+        padding: 0.5rem 0;
+        color: #555;
+        position: relative;
+        padding-left: 1.5rem;
+    }
+
+    .service-features li:before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: #27ae60;
+        font-weight: bold;
+    }
+
+    .stats {
+        background: #f8f9fa;
+        padding: 3rem 0;
+    }
+
+    .stat-card {
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 1rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .stat-icon.users { background: linear-gradient(135deg, #4a90e2, #357abd); }
+    .stat-icon.accuracy { background: linear-gradient(135deg, #27ae60, #1e8449); }
+    .stat-icon.support { background: linear-gradient(135deg, #17a2b8, #138496); }
+    .stat-icon.growth { background: linear-gradient(135deg, #f39c12, #d68910); }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: #666;
+        font-size: 1rem;
+    }
+
+    @@media (max-width: 768px) {
+        .hero-container {
+            grid-template-columns: 1fr;
+            text-align: center;
+        }
+        
+        .hero-content h1 {
+            font-size: 2rem;
+        }
+        
+        .hero-buttons {
+            align-items: center;
+        }
+    }
+</style>
+<section class="hero">
+    <div class="container hero-container">
+        <div class="hero-content">
+            <h1>Skill Development Made Simple & Effective</h1>
+            <p>Experience the future of professional development with our comprehensive skill matrix platform. Track, develop, and showcase your abilities with confidence and precision.</p>
+            <div class="hero-buttons">
+                <a asp-controller="User" asp-action="Register" class="btn-hero-primary">📝 Sign Up</a>
+                <a asp-controller="User" asp-action="Login" class="btn-hero-secondary">🔐 Login</a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="skill-icon">
+                🎯
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="services" id="services">
+    <div class="container">
+        <div class="services-header">
+            <h2>Our Skill Development Services</h2>
+            <p>Comprehensive solutions for all your professional development needs</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="service-card">
+                    <div class="service-icon technical">💻</div>
+                    <h3>Technical Skills</h3>
+                    <p>Master cutting-edge technologies and programming languages with our structured learning paths.</p>
+                    <ul class="service-features">
+                        <li>Programming languages certification</li>
+                        <li>Cloud platform expertise</li>
+                        <li>DevOps and automation tools</li>
+                        <li>Mobile development access</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="service-card">
+                    <div class="service-icon soft">🤝</div>
+                    <h3>Soft Skills</h3>
+                    <p>Develop essential interpersonal and communication skills for career advancement.</p>
+                    <ul class="service-features">
+                        <li>Communication workshops</li>
+                        <li>Team collaboration training</li>
+                        <li>Presentation skills</li>
+                        <li>Emotional intelligence</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="service-card">
+                    <div class="service-icon leadership">👑</div>
+                    <h3>Leadership Training</h3>
+                    <p>Build leadership capabilities and management skills for tomorrow's challenges.</p>
+                    <ul class="service-features">
+                        <li>Strategic thinking development</li>
+                        <li>Team management skills</li>
+                        <li>Decision-making frameworks</li>
+                        <li>Conflict resolution</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="service-card">
+                    <div class="service-icon assessment">📋</div>
+                    <h3>Skill Assessment</h3>
+                    <p>Comprehensive evaluation tools to identify strengths and areas for improvement.</p>
+                    <ul class="service-features">
+                        <li>360-degree feedback</li>
+                        <li>Competency mapping</li>
+                        <li>Performance analytics</li>
+                        <li>Progress tracking</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="service-card">
+                    <div class="service-icon learning">📚</div>
+                    <h3>Learning Paths</h3>
+                    <p>Personalized learning journeys tailored to your career goals and aspirations.</p>
+                    <ul class="service-features">
+                        <li>Customized curricula</li>
+                        <li>Interactive modules</li>
+                        <li>Hands-on projects</li>
+                        <li>Mentorship programs</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="service-card">
+                    <div class="service-icon analytics">📊</div>
+                    <h3>Analytics & Reporting</h3>
+                    <p>Data-driven insights to optimize your skill development and career growth.</p>
+                    <ul class="service-features">
+                        <li>Skill gap analysis</li>
+                        <li>Performance dashboards</li>
+                        <li>Trend identification</li>
+                        <li>ROI measurement</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="stats">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon users">👥</div>
+                    <div class="stat-number">50K+</div>
+                    <div class="stat-label">Active Learners</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon accuracy">🎯</div>
+                    <div class="stat-number">95%</div>
+                    <div class="stat-label">Assessment Accuracy</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon support">⏰</div>
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Learning Support</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon growth">🌍</div>
+                    <div class="stat-number">200+</div>
+                    <div class="stat-label">Skills Covered</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

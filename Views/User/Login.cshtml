@@ -1,0 +1,95 @@
+﻿@model Skill_Matrix.DTOs.UserLoginDto
+@{
+    ViewData["Title"] = "Login - Skill-Matrix";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/StyleLogin.css" />
+</head>
+<body>
+    <div class="login-container">
+        <!-- Left Side - Image Showcase -->
+        <div class="image-section">
+            <div class="image-content">
+                <div class="skills-icon">🚀</div>
+                <h1 class="showcase-title">Welcome Back</h1>
+                <p class="showcase-subtitle">Sign in to continue your learning journey and unlock your potential with Skillatrix</p>
+            </div>
+        </div>
+
+        <!-- Right Side - Login Form -->
+        <div class="form-section">
+            <form asp-action="Login" method="post" class="login__form" asp-controller="User">
+                @Html.AntiForgeryToken()
+
+                <div class="form-header">
+                    <h3 class="login__title">Sign In</h3>
+                    <p class="form-subtitle">Enter your credentials to access your account</p>
+                </div>
+
+                <!-- Display validation summary -->
+                @if (ViewData.ModelState != null && !ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <p>@error.ErrorMessage</p>
+                        }
+                    </div>
+                }
+
+                <!-- Display success messages -->
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success">
+                        @TempData["SuccessMessage"]
+                    </div>
+                }
+
+                <!-- Display error messages -->
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger">
+                        @TempData["ErrorMessage"]
+                    </div>
+                }
+
+                <div class="login__group">
+                    <div class="form-field full-width">
+                        <label asp-for="UsernameOrEmail" class="login__label">Username or Email</label>
+                        <input asp-for="UsernameOrEmail" type="text" placeholder="Enter your username or email" class="login__input" />
+                        <span asp-validation-for="UsernameOrEmail" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-field full-width">
+                        <label asp-for="Password" class="login__label">Password</label>
+                        <input asp-for="Password" type="password" placeholder="Enter your password" class="login__input" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-options">
+                        <div class="remember-me">
+                            <input type="checkbox" id="rememberMe" name="rememberMe" class="checkbox">
+                            <label for="rememberMe" class="checkbox-label">Remember me</label>
+                        </div>
+                        <a href="#" class="forgot-password">Forgot password?</a>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="login__button">Sign In</button>
+                    <span class="login__signup">
+                        Don't have an account? <a asp-controller="User" asp-action="Register">Sign up here</a>
+                    </span>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

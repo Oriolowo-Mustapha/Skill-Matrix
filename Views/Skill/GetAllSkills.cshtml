@@ -1,0 +1,137 @@
+﻿@model List<string>
+
+@{
+    ViewData["Title"] = "Skills";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .skills-container {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+        
+    .skill-btn {
+        font-size: 0.9em;
+        padding: 0.5em 0.8em;
+        transition: all 0.3s ease;
+        border-radius: 20px;
+    }
+        
+    .skill-btn:hover {
+        background-color: #007bff;
+        color: white;
+        transform: translateY(-1px);
+    }
+        
+
+        
+    .card {
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+        
+    .card-header {
+        border-bottom: none;
+    }
+        
+    .alert {
+        border: none;
+        border-radius: 8px;
+    }
+        
+    @@media (max-width: 768px) {
+        .skill-btn {
+            font-size: 0.8em;
+            padding: 0.4em 0.6em;
+        }
+    }
+    </style>
+
+<div class="container mt-4">
+    <!-- Display TempData messages -->
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            @TempData["Message"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-tags me-2"></i>Popular Programming Skills
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if (Model != null && Model.Any())
+                    {
+                        <div class="row">
+                            <div class="col-md-12">
+                                <p class="text-muted mb-3">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Showing @Model.Count popular programming skills from StackOverflow
+                                </p>
+                                
+                                <div class="skills-container">
+                                    @foreach (var skill in Model)
+                                    {
+                                        <form asp-controller="Skill" asp-action="AddSkill" asp-route-skillName=@skill method="post" class="d-inline">
+                                            <input type="hidden" name="skillName" value="@skill" />
+                                            <button type="submit" class="btn btn-outline-primary skill-btn me-2 mb-2">
+                                                <i class="fas fa-plus me-1"></i>@skill
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <div class="alert alert-info" role="alert">
+                                    <i class="fas fa-lightbulb me-2"></i>
+                                    <strong>How to use:</strong> Click on any skill below to add it to your profile. 
+                                    You'll be redirected to take a quiz after adding a skill.
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>No Skills Found</strong>
+                            <p class="mb-0">Unable to load skills at this time. Please try again later.</p>
+                        </div>
+                    }
+                </div>
+                
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>
+                            Last updated: @DateTime.Now.ToString("MMM dd, yyyy HH:mm")
+                        </small>
+                        <button class="btn btn-outline-primary btn-sm" onclick="location.reload()">
+                            <i class="fas fa-sync-alt me-1"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
