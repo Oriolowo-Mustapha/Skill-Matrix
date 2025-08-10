@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="signup-container">
+        <!-- Left Side - Image Showcase -->
+        <div class="image-section">
+            <div class="image-content">
+                <div class="skills-icon">🎯</div>
+                <h1 class="showcase-title">Join Skill-Matrix</h1>
+                <p class="showcase-subtitle">Create your account and start building your skills with our comprehensive learning platform</p>
+            </div>
+        </div>
+
+        <!-- Right Side - Signup Form -->
+        <div class="form-section">
+            <form asp-action="Register" method="post" class="login__form" asp-controller="User">
+                @Html.AntiForgeryToken()
+
+                <div class="form-header">
+                    <h3 class="login__title">Welcome</h3>
+                    <p class="form-subtitle">Create your account to get started</p>
+                </div>
+
+                <!-- Display validation summary -->
+                @if (ViewData.ModelState != null && !ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <p>@error.ErrorMessage</p>
+                        }
+                    </div>
+                }
+
+                <!-- Display success messages -->
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success">
+                        @TempData["SuccessMessage"]
+                    </div>
+                }
+
+                <div class="login__group">
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label asp-for="FirstName" class="login__label">First Name</label>
+                            <input asp-for="FirstName" type="text" placeholder="Enter your first name" class="login__input" />
+                            <span asp-validation-for="FirstName" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-field">
+                            <label asp-for="LastName" class="login__label">Last Name</label>
+                            <input asp-for="LastName" type="text" placeholder="Enter your last name" class="login__input" />
+                            <span asp-validation-for="LastName" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-field full-width">
+                        <label asp-for="Username" class="login__label">Username</label>
+                        <input asp-for="Username" type="text" placeholder="Enter your username" class="login__input" />
+                        <span asp-validation-for="Username" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-field full-width">
+                        <label asp-for="Email" class="login__label">Email Address</label>
+                        <input asp-for="Email" type="email" placeholder="Enter your email" class="login__input" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label asp-for="Password" class="login__label">Password</label>
+                            <input asp-for="Password" type="password" placeholder="Enter your password" class="login__input" />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-field">
+                            <label asp-for="ConfirmPassword" class="login__label">Confirm Password</label>
+                            <input asp-for="ConfirmPassword" type="password" placeholder="Confirm your password" class="login__input" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="login__button">Sign Up</button>
+                    <span class="login__signup">
+                        Already have an account? <a asp-controller="User" asp-action="Login">Login here</a>
+                    </span>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
