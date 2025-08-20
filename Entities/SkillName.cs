@@ -2,7 +2,7 @@
 
 namespace Skill_Matrix.Entities
 {
-	public class TagItem
+	public class SkillName
 	{
 		[JsonPropertyName("name")]
 		public string Name { get; set; }

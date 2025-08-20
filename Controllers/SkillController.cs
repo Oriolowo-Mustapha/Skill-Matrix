@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Skill_Matrix.Attributes;
 using Skill_Matrix.Interfaces.Services;
+using Skill_Matrix.ViewModel;
 
 namespace Skill_Matrix.Controllers
 {
@@ -15,26 +16,28 @@ namespace Skill_Matrix.Controllers
 
 		[CustomAuthorize]
 		[HttpGet]
-		public async Task<IActionResult> Index()
+		public async Task<IActionResult> Index(int pageNumber = 1)
 		{
 			try
 			{
-				var userId = GetCurrentUserId();
-				if (userId == Guid.Empty)
+				int pageSize = 12; // Skills per page
+				var (skillsOnPage, totalCount) = await _skillService.GetProgrammingSkillNamesAsync(pageNumber, pageSize);
+
+				var vm = new PagedSkillsViewModel
 				{
-					return RedirectToAction("Login", "User");
-				}
-				var skills = await _skillService.GetSkillsAsync(userId);
-				if (skills == null)
-				{
-					TempData["Error"] = "Skills Unavailable. \n Go add new skills.";
-				}
-				return View(skills);
+					Skills = skillsOnPage,
+					CurrentPage = pageNumber,
+					TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+					HasPreviousPage = pageNumber > 1,
+					HasNextPage = pageNumber < (int)Math.Ceiling(totalCount / (double)pageSize)
+				};
+
+				return View(vm);
 			}
 			catch (Exception ex)
 			{
-				TempData["Error"] = $"Unable to load Skills. Please try again.\n{ex}";
-				return RedirectToAction("Login", "User");
+				TempData["Error"] = $"Unable to load Skills. Please try again.\n{ex.Message}";
+				return RedirectToAction("Index", "Home");
 			}
 
 		}
@@ -71,26 +74,23 @@ namespace Skill_Matrix.Controllers
 			}
 		}
 
-
-		//[CustomAuthorize]
+		[CustomAuthorize]
 		[HttpGet]
-		public async Task<IActionResult> GetAllSkills()
+		public async Task<IActionResult> GetAllSkills(int pageNumber = 1, string searchTerm = "")
 		{
-			try
+			var skills = await _skillService.GetSkillsAsync(searchTerm, pageNumber);
+
+			var pagedModel = new PagedSkillsViewModel
 			{
-				//var userId = GetCurrentUserId();
-				//if (userId == Guid.Empty)
-				//{
-				//	return RedirectToAction("Login", "User");
-				//}
-				var getSkills = await _skillService.GetSkillNamesOnlyAsync();
-				return View(getSkills);
-			}
-			catch (Exception ex)
-			{
-				TempData["Error"] = $"Unable to load Skills. Please try again.\n{ex}";
-				return RedirectToAction("Login", "User");
-			}
+				Skills = skills.Items,
+				CurrentPage = pageNumber,
+				TotalPages = skills.TotalPages,
+				HasPreviousPage = pageNumber > 1,
+				HasNextPage = pageNumber < skills.TotalPages
+			};
+
+			ViewBag.SearchTerm = searchTerm;
+			return View("Index", pagedModel);
 		}
 
 		[CustomAuthorize]

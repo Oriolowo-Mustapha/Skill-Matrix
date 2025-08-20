@@ -1,0 +1,56 @@
+﻿@model Skill_Matrix.DTOs.QuizResultDto
+@{
+    ViewData["Title"] = "Assessment Results";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="~/css/Result.css" rel="stylesheet" />
+
+<div class="quiz-result-wrapper">
+    <div class="container">
+        <div class="header">
+            <div class="trophy-icon">🏆</div>
+            <h1>Assessment Completed!</h1>
+            <div class="skill-name">@Model.SkillName</div>
+        </div>
+        <div class="content">
+            <div class="score-section">
+                <div class="score-circle pulse">
+                    <div class="score-text">@Model.Score%</div>
+                </div>
+                <div class="proficiency-badge">@Model.ProficiencyLevel</div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">@Model.NoOfCorrectAnswers</div>
+                    <div class="stat-label">Correct</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">@Model.NoOfWrongAnswers</div>
+                    <div class="stat-label">Wrong</div>
+                </div>
+            </div>
+            <div class="details-section">
+                <div class="detail-item">
+                    <div class="detail-label">Quiz ID</div>
+                    <div class="detail-value">#@Model.Id.ToString().Substring(0, 8).ToUpper()</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Retake Count</div>
+                    <div class="detail-value">@Model.RetakeCount</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Date Taken</div>
+                    <div class="detail-value">@Model.DateTaken.ToString("MMM dd, yyyy")</div>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <a href="#" class="btn btn-primary">Continue Learning</a>
+                <a href="#" class="btn btn-secondary">View Result</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/Result.js"></script>

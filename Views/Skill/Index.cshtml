@@ -1,0 +1,220 @@
+﻿@model Skill_Matrix.ViewModel.PagedSkillsViewModel
+@{
+    ViewData["Title"] = "Skills Assessment";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="~/css/skill.css"/>
+<link rel="stylesheet" href="path/to/font-awesome/css/font-awesome.min.css">
+
+<div class="main-container">
+    @if (TempData["Message"] != null)
+    {
+        <div class="notification notification--success">
+            <div class="notification__icon">
+                <i class="fa fa-check-circle"></i>
+            </div>
+            <div class="notification__content">
+                <p class="notification__message">@TempData["Message"]</p>
+            </div>
+            <button type="button" class="notification__close" data-bs-dismiss="alert">
+                <i class="fa fa-times" aria-hidden="true"></i>
+            </button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="notification notification--error">
+            <div class="notification__icon">
+                <i class="fa fa-exclamation-triangle"></i>
+            </div>
+            <div class="notification__content">
+                <p class="notification__message">@TempData["Error"]</p>
+            </div>
+            <button type="button" class="notification__close" data-bs-dismiss="alert">
+                <i class="fa fa-times" aria-hidden="true"></i>
+            </button>
+        </div>
+    }
+
+    <div class="page-header">
+        <div class="page-header__content">
+            <h1 class="page-title">
+                <i class="fa fa-code page-title__icon"></i>
+                Skills Assessment Portal
+            </h1>
+            <p class="page-subtitle">Select your programming expertise and test your knowledge</p>
+        </div>
+        
+        <form method="get" asp-action="GetAllSkills" class="search-form">
+            <div class="search-input-wrapper">
+                <i class="fas fa-search search-input__icon"></i>
+                <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" 
+                       class="search-input" placeholder="Search programming skills..." />
+                <button type="submit" class="search-button">
+                    <span>Search</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="content-card">
+        @if (Model.Skills != null && Model.Skills.Any())
+        {
+            <form asp-controller="Quiz" asp-action="TakeQuiz" method="post" class="assessment-form">
+                <div class="form-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fa fa-laptop-code section-title__icon"></i>
+                            Select Programming Language
+                        </h2>
+                        <p class="section-description">Choose the technology you'd like to be assessed on</p>
+                    </div>
+
+                    <div class="skills-grid">
+                        @for (int i = 0; i < Model.Skills.Count; i++)
+                        {
+                            var skillId = $"skill-{i}";
+                            <div class="skill-option">
+                                <input type="radio" id="@skillId" name="skillName" value="@Model.Skills[i]" class="skill-input" required />
+                                <label for="@skillId" class="skill-card">
+                                    <div class="skill-card__content">
+                                        <span class="skill-name">@Model.Skills[i]</span>
+                                        <div class="skill-card__indicator"></div>
+                                    </div>
+                                </label>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fa fa-chart-line section-title__icon"></i>
+                            Experience Level
+                        </h2>
+                        <p class="section-description">How would you rate your proficiency in the selected technology?</p>
+                    </div>
+
+                    <div class="experience-grid">
+                        @foreach (var level in new[] { "Beginner", "Intermediate", "Advanced", "Expert" })
+                        {
+                            var levelId = level.ToLower();
+                            var levelDescription = level switch {
+                                "Beginner" => "New to programming, learning basics",
+                                "Intermediate" => "Comfortable with syntax and concepts",
+                                "Advanced" => "Experienced with complex projects",
+                                "Expert" => "Deep expertise, can mentor others",
+                                _ => ""
+                            };
+                            
+                            <div class="experience-option">
+                                <input type="radio" id="@levelId" name="proficiencyLevel" value="@level" class="experience-input" required />
+                                <label for="@levelId" class="experience-card">
+                                    <div class="experience-card__header">
+                                        <span class="experience-level">@level</span>
+                                        <div class="experience-indicator">
+                                            @for (int dot = 0; dot < 4; dot++)
+                                            {
+                                                <span class="indicator-dot @(dot < Array.IndexOf(new[] { "Beginner", "Intermediate", "Advanced", "Expert" }, level) + 1 ? "active" : "")"></span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <p class="experience-description">@levelDescription</p>
+                                </label>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fa fa-list-ol section-title__icon"></i>
+                            Number of Questions
+                        </h2>
+                        <p class="section-description">How many questions would you like in your assessment?</p>
+                    </div>
+
+                    <div class="questions-grid">
+                        @foreach (var count in new[] { 5, 10, 15, 20 })
+                        {
+                            var countId = $"questions-{count}";
+                            var duration = count switch {
+                                5 => "~ 5 questions",
+                                10 => "~ 10 questions", 
+                                15 => "~ 15 questions",
+                                20 => "~ 20 questions",
+                                _ => ""
+                            };
+                            
+                            <div class="question-option">
+                                <input type="radio" id="@countId" name="questionCount" value="@count" class="question-input" required />
+                                <label for="@countId" class="question-card">
+                                    <div class="question-card__content">
+                                        <div class="question-number">@count</div>
+                                        <div class="question-details">
+                                            <span class="question-label">Questions</span>
+                                            <span class="question-duration">@duration</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="primary-button">
+                        <i class="fa fa-play-circle primary-button__icon"></i>
+                        <span>Begin Assessment</span>
+                    </button>
+                </div>
+            </form>
+
+            @if (Model.TotalPages > 1)
+            {
+                <div class="pagination-wrapper">
+                    <nav class="pagination" aria-label="Skills navigation">
+                        <a class="pagination__button @(Model.HasPreviousPage ? "" : "disabled")" 
+                           asp-action="GetAllSkills" asp-route-pageNumber="@(Model.CurrentPage - 1)">
+                            <i class="fa fa-chevron-left"></i>
+                            <span>Previous</span>
+                        </a>
+
+                        <div class="pagination__numbers">
+                            @for (int page = 1; page <= Model.TotalPages; page++)
+                            {
+                                <a class="pagination__number @(page == Model.CurrentPage ? "active" : "")"
+                                   asp-action="GetAllSkills" asp-route-pageNumber="@(page)">
+                                    @(page)
+                                </a>
+                            }
+                        </div>
+
+                        <a class="pagination__button @(Model.HasNextPage ? "" : "disabled")" 
+                           asp-action="GetAllSkills" asp-route-pageNumber="@(Model.CurrentPage + 1)">
+                            <span>Next</span>
+                            <i class="fa fa-chevron-right"></i>
+                        </a>
+                    </nav>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="empty-state__icon">
+                    <i class="fa fa-search"></i>
+                </div>
+                <h3 class="empty-state__title">No Skills Found</h3>
+                <p class="empty-state__message">
+                    We couldn't find any programming skills matching your search. 
+                    Try adjusting your search terms or browse all available skills.
+                </p>
+            </div>
+        }
+    </div>
+</div>

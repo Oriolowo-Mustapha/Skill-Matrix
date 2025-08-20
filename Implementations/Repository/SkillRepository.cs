@@ -43,5 +43,11 @@ namespace Skill_Matrix.Implementations.Repository
 			_context.Skills.Update(skill);
 			await _context.SaveChangesAsync();
 		}
+
+		public async Task<Skill> GetByUserIdandSkillNameAsync(Guid userId, string skillName)
+		{
+			return await _context.Skills.
+				Where(s => s.UserId == userId && s.SkillName == skillName).FirstOrDefaultAsync();
+		}
 	}
 }

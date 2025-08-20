@@ -1,7 +1,0 @@
-services:
-  - type: web
-    name: my-mvc-app
-    env: dotnet
-    buildCommand: dotnet publish -c Release -o out
-    startCommand: dotnet out/MyMvcApp.dll
-    plan: free

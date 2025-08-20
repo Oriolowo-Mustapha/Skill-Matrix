@@ -2,14 +2,15 @@
 {
 	public class Skill : BaseEnitity
 	{
-		public string SkillName { get; set; } // e.g., "C#", "JavaScript"
-		public string ProficiencyLevel { get; set; } // e.g., "Beginner", "Intermediate"
-		public DateTime? LastAssessed { get; set; } // Date of last quiz
-		public Guid UserId { get; set; } // Foreign key to User
+		public string SkillName { get; set; }
+		public string ProficiencyLevel { get; set; }
+		public DateTime? LastAssessed { get; set; }
 
-		// Navigation properties
+		public Guid UserId { get; set; }
 		public User User { get; set; }
-		public ICollection<QuizResult> QuizResults { get; set; } = new List<QuizResult>();
-		public ICollection<Suggestion> Suggestions { get; set; } = new List<Suggestion>();
+
+		public List<QuizResult> QuizResults { get; set; } = new();
+		public List<Suggestion> Suggestions { get; set; } = new();
+		public List<QuizQuestions> QuizQuestions { get; set; } = new();
 	}
 }

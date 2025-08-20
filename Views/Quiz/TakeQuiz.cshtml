@@ -6,202 +6,8 @@
     var skillName = ViewBag.SkillName;
 }
 
-<style>
-    .quiz-hero {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 3rem 0;
-        margin-top: -1rem;
-        text-align: center;
-    }
+<link rel="stylesheet" href="~/css/quiz.css" />
 
-    .quiz-hero h2 {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-        font-weight: 300;
-    }
-
-    .quiz-badge {
-        background: rgba(255,255,255,0.2);
-        padding: 0.5rem 1.5rem;
-        border-radius: 25px;
-        display: inline-block;
-        margin-bottom: 1rem;
-        font-size: 0.9rem;
-        backdrop-filter: blur(10px);
-    }
-
-    .quiz-container {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 2rem 0;
-    }
-
-    .quiz-form {
-        background: white;
-        border-radius: 20px;
-        padding: 2rem;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        margin-top: -2rem;
-        position: relative;
-        z-index: 10;
-    }
-
-    .question-card {
-        background: #f8f9fa;
-        border-radius: 15px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        border-left: 4px solid #667eea;
-        transition: all 0.3s ease;
-    }
-
-    .question-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-    }
-
-    .question-number {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: 0.9rem;
-        margin-right: 1rem;
-    }
-
-    .question-text {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 1.5rem;
-        display: flex;
-        align-items: center;
-    }
-
-    .options-container {
-        display: grid;
-        gap: 1rem;
-    }
-
-    .option-item {
-        background: white;
-        border: 2px solid #e9ecef;
-        border-radius: 10px;
-        padding: 1rem 1.5rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .option-item:hover {
-        border-color: #667eea;
-        transform: translateX(5px);
-    }
-
-    .option-item:has(input:checked) {
-        border-color: #667eea;
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-    }
-
-    .option-radio {
-        margin-right: 1rem;
-        transform: scale(1.2);
-        accent-color: #667eea;
-    }
-
-    .option-label {
-        font-size: 1rem;
-        color: #555;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        width: 100%;
-    }
-
-    .progress-bar {
-        background: #e9ecef;
-        height: 6px;
-        border-radius: 3px;
-        margin-bottom: 2rem;
-        overflow: hidden;
-    }
-
-    .progress-fill {
-        background: linear-gradient(90deg, #667eea, #764ba2);
-        height: 100%;
-        border-radius: 3px;
-        transition: width 0.3s ease;
-    }
-
-    .progress-text {
-        text-align: center;
-        color: #666;
-        font-size: 0.9rem;
-        margin-bottom: 1rem;
-    }
-
-    .submit-container {
-        text-align: center;
-        margin-top: 3rem;
-        padding-top: 2rem;
-        border-top: 1px solid #e9ecef;
-    }
-
-    .btn-submit {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        border: none;
-        padding: 1rem 3rem;
-        border-radius: 50px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-    }
-
-    .btn-submit:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    }
-
-    .quiz-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-    }
-
-    @@media (max-width: 768px) {
-        .quiz-hero h2 {
-            font-size: 2rem;
-        }
-        
-        .quiz-form {
-            margin: 1rem;
-            padding: 1.5rem;
-        }
-        
-        .question-card {
-            padding: 1.5rem;
-        }
-        
-        .question-text {
-            font-size: 1rem;
-        }
-        
-        .option-item {
-            padding: 0.75rem 1rem;
-        }
-    }
-</style>
 
 <section class="quiz-hero">
     <div class="container">
@@ -214,9 +20,18 @@
 
 <div class="container quiz-container">
     <div class="quiz-form">
-        <div class="progress-text">Answer all questions to proceed</div>
+        <div class="progress-text">
+            <span id="currentQuestionText">Question 1 of @Model.Count</span>
+        </div>
         <div class="progress-bar">
-            <div class="progress-fill" style="width: 0%"></div>
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+        
+        <div class="question-status" id="questionStatus">
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                <div class="status-dot @(i == 0 ? "current" : "")" data-question="@i"></div>
+            }
         </div>
         
         <form asp-action="SubmitQuiz" asp-controller="Quiz" asp-route-skillId=@skillId method="post" id="quizForm">
@@ -224,14 +39,18 @@
             
             @for (int i = 0; i < Model.Count; i++)
             {
-                <div class="question-card">
+                <div class="question-card @(i == 0 ? "active" : "")" data-question="@i">
+                    <div class="question-header">
+                        <div class="question-counter">Question @(i + 1) of @Model.Count</div>
+                    </div>
+                    
                     <div class="question-text">
                         <span class="question-number">@(i + 1)</span>
                         @Model[i].Question
                     </div>
                     
                     <div class="options-container">
-                        @for (int j = 0; j < Model[i].Options.Length; j++)
+                        @for (int j = 0; j < Model[i].Options.Count; j++)
                         {
                             <div class="option-item">
                                 <label class="option-label">
@@ -244,11 +63,21 @@
                 </div>
             }
             
-            <div class="submit-container">
-                <button type="submit" class="btn-submit">
+            <div class="navigation-container">
+                <button type="button" class="btn-nav" id="prevBtn" onclick="QuizNavigation.changeQuestion(-1)" disabled>
+                    ← Previous
+                </button>
+                
+                <button type="submit" class="btn-submit" id="submitBtn">
                     🚀 Submit Quiz
+                </button>
+                
+                <button type="button" class="btn-nav" id="nextBtn" onclick="QuizNavigation.changeQuestion(1)">
+                    Next →
                 </button>
             </div>
         </form>
     </div>
 </div>
+
+<script src="~/js/quiz.js"></script>

@@ -1,4 +1,7 @@
-﻿using Skill_Matrix.DTOs;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Skill_Matrix.Data;
+using Skill_Matrix.DTOs;
 using Skill_Matrix.Entities;
 using Skill_Matrix.Interfaces.Repository;
 using Skill_Matrix.Interfaces.Services;
@@ -13,23 +16,30 @@ namespace SkillMatrix.Services
 		private readonly IQuizRepository _quizResultRepository;
 		private readonly HttpClient _httpClient;
 		private readonly string _geminiApiKey;
+		private readonly IHttpContextAccessor _httpContextAccessor;
+		private readonly IMemoryCache _cache;
+		private readonly SkillMatrixDbContext _dbContext;
 
-		public QuizService(ISkillRepository skillRepository, IQuizRepository quizResultRepository, HttpClient httpClient, IConfiguration configuration)
+		public QuizService(ISkillRepository skillRepository, IQuizRepository quizResultRepository, HttpClient httpClient, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IMemoryCache cache, SkillMatrixDbContext dbContext)
 		{
 			_skillRepository = skillRepository;
 			_quizResultRepository = quizResultRepository;
 			_httpClient = httpClient;
 			_geminiApiKey = configuration["Gemini:ApiKey"]; // Changed to Gemini API key from appsettings.json
+			_httpContextAccessor = httpContextAccessor;
+			_cache = cache;
+			_dbContext = dbContext;
 		}
-		public List<QuizDto> quizQuestionsForScoring;
 
-		public async Task<List<QuizDto>> GetQuizQuestionsAsync(string skillName, int count)
+		public async Task<List<QuizDto>> GetQuizQuestionsAsync(string skillName, int count, string ProficiencyLevel)
 		{
-			// Modify the prompt to request JSON output
-			var prompt = $"Generate {count} multiple choice questions about {skillName}. " +
-						 $"Each question should have 4 options labeled A to D. " +
-						 $"Include the correct answer. " +
-						 $"Format the output as a JSON array of objects, where each object has 'question', 'options' (an array of strings), and 'correctAnswer' (the text of the correct option, not just the letter).";
+			var prompt = $"Generate {count} multiple-choice questions on the core concepts of {skillName}, " +
+			 $"tailored to a {ProficiencyLevel} level. " +
+			 $"Each question should have 4 options labeled A to D. " +
+			 $"Include questions that test deep understanding, such as those related to algorithms, common data structures, or fundamental principles of {skillName}. " +
+			 $"The questions should focus on the 'why' and 'how' rather than just basic syntax. " +
+			 $"Include the correct answer. " +
+			 $"Format the output as a JSON array of objects, where each object has 'question', 'options' (an array of strings), and 'correctAnswer' (the text of the correct option, not just the letter).";
 
 			var requestBody = new
 			{
@@ -70,17 +80,60 @@ namespace SkillMatrix.Services
 
 			// Extract the generated text from Gemini's response
 			var geminiContent = geminiResponse?.candidates?.FirstOrDefault()?.content?.parts?.FirstOrDefault()?.text;
-			return ParseQuizFromJson(geminiContent ?? string.Empty);
+			var quizQuestions = await ParseQuizFromJsonAsync(geminiContent ?? string.Empty);
+			var userId = GetCurrentUserId();
+			var skill = await _skillRepository.GetByUserIdandSkillNameAsync(userId, skillName);
+			await SaveParsedQuizAsync(userId, skill.Id, quizQuestions);
+			_cache.Set($"QuizQuestions_{skill.Id}", quizQuestions, TimeSpan.FromMinutes(30));
+			return quizQuestions;
 		}
 
 		public async Task<QuizResultDto> SubmitQuizAsync(Guid userId, Guid skillId, List<string> answers)
 		{
+			// 1. Get skill and validate
 			var skill = await _skillRepository.GetByIdAsync(skillId);
 			if (skill == null || skill.UserId != userId)
 				throw new Exception("Invalid skill or user.");
 
-			var score = GetScorefromQuestions(quizQuestionsForScoring, answers);
 
+			var quizQuestions = await _quizResultRepository.GetBySkillIdAsync(userId, skillId);
+			if (quizQuestions == null || !quizQuestions.Any())
+				throw new Exception("No quiz questions found for this skill.");
+
+			if (quizQuestions.Count != answers.Count)
+				throw new Exception("Number of answers does not match the number of questions.");
+
+			// 3. Evaluate answers
+			int correctCount = 0;
+			int wrongCount = 0;
+			var quizResultQuestions = new List<QuizQuestions>();
+
+			for (int i = 0; i < quizQuestions.Count; i++)
+			{
+				var question = quizQuestions[i];
+				var userAnswer = answers[i];
+
+				bool isCorrect = question.CorrectAnswer == userAnswer;
+				if (isCorrect)
+				{
+					correctCount++;
+				}
+				else
+				{
+					wrongCount++;
+					// Store wrong answer for review
+					question.WrongAnswers.Add(new WrongAnswers
+					{
+						AnswerText = userAnswer,
+						QuizQuestion = question
+					});
+				}
+			}
+
+			// 4. Calculate score
+			int score = (int)((correctCount / (double)quizQuestions.Count) * 100);
+
+			// 5. Determine proficiency level
 			string proficiencyLevel = score switch
 			{
 				<= 40 => "Beginner",
@@ -89,21 +142,34 @@ namespace SkillMatrix.Services
 				_ => "Expert"
 			};
 
+			// 6. Check for existing result (retakes)
+			var previousResult = await _quizResultRepository.GetLatestByUserAndSkillAsync(userId, skillId);
+
+			int retakeCount = previousResult != null ? previousResult.RetakeCount + 1 : 0;
+
+			// 7. Create QuizResult object
 			var quizResult = new QuizResult
 			{
 				UserId = userId,
 				SkillId = skillId,
 				Score = score,
 				ProficiencyLevel = proficiencyLevel,
-				DateTaken = DateTime.UtcNow
+				RetakeCount = retakeCount,
+				NoOfCorrectAnswers = correctCount,
+				NoOfWrongAnswers = wrongCount,
+				DateTaken = DateTime.UtcNow,
+				QuizQuestions = quizResultQuestions
 			};
 
+			// 8. Update skill progress
 			skill.ProficiencyLevel = proficiencyLevel;
 			skill.LastAssessed = DateTime.UtcNow;
 
+			// 9. Save to DB
 			await _quizResultRepository.AddAsync(quizResult);
 			await _skillRepository.UpdateAsync(skill);
 
+			// 10. Return DTO
 			return new QuizResultDto
 			{
 				Id = quizResult.Id,
@@ -111,18 +177,15 @@ namespace SkillMatrix.Services
 				SkillName = skill.SkillName,
 				Score = score,
 				ProficiencyLevel = proficiencyLevel,
-				DateTaken = quizResult.DateTaken
+				DateTaken = quizResult.DateTaken,
+				NoOfCorrectAnswers = correctCount,
+				NoOfWrongAnswers = wrongCount,
+				RetakeCount = retakeCount
 			};
 		}
 
-		private int GetScorefromQuestions(List<QuizDto> quizQuestion, List<string> answers)
-		{
-			int correctAnswers = quizQuestion.Zip(answers, (q, a) => q.CorrectAnswer == a ? 1 : 0).Sum();
-			int score = (int)((correctAnswers / (double)quizQuestion.Count) * 100);
-			return score;
-		}
 
-		private List<QuizDto> ParseQuizFromJson(string jsonText)
+		private async Task<List<QuizDto>> ParseQuizFromJsonAsync(string jsonText)
 		{
 			if (string.IsNullOrWhiteSpace(jsonText))
 			{
@@ -149,7 +212,6 @@ namespace SkillMatrix.Services
 			try
 			{
 				var quizQuestions = JsonSerializer.Deserialize<List<QuizDto>>(cleanedJsonText, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-				quizQuestionsForScoring = quizQuestions;
 				return quizQuestions ?? new List<QuizDto>();
 			}
 			catch (JsonException ex)
@@ -159,6 +221,75 @@ namespace SkillMatrix.Services
 				Console.WriteLine($"Cleaned JSON Attempt: {cleanedJsonText}");
 				throw new Exception("Failed to parse quiz questions from Gemini's JSON response.", ex);
 			}
+		}
+
+		public async Task SaveParsedQuizAsync(Guid userId, Guid skillId, List<QuizDto> quizDtos)
+		{
+			if (quizDtos == null || !quizDtos.Any())
+				throw new Exception("No quiz questions to save.");
+
+			var quizQuestions = new List<QuizQuestions>();
+
+			foreach (var dto in quizDtos)
+			{
+				var quizQuestion = new QuizQuestions
+				{
+					Question = dto.Question,
+					CorrectAnswer = dto.CorrectAnswer,
+					SkillId = skillId,
+					UserId = userId,
+					CreatedAt = DateTime.UtcNow,
+					Options = dto.Options.Select(opt => new Options
+					{
+						OptionText = opt
+					}).ToList()
+				};
+
+				quizQuestions.Add(quizQuestion);
+			}
+
+			// Save to DB via repository
+			await _quizResultRepository.AddRangeAsync(quizQuestions);
+		}
+
+		public List<QuizDto> GetQuizQuestionsFromCache(Guid skillId)
+		{
+			var cacheKey = $"QuizQuestions_{skillId}";
+			var userId = GetCurrentUserId();
+
+			if (!_cache.TryGetValue(cacheKey, out List<QuizQuestions> quizQuestions))
+			{
+				// Cache miss → Load from DB
+				quizQuestions = _dbContext.QuizQuestions
+					.Where(q => q.SkillId == skillId && q.UserId == userId)
+					.Include(q => q.Options)   // important so Options are loaded
+					.ToList();
+
+				// Save into cache
+				_cache.Set(cacheKey, quizQuestions, TimeSpan.FromMinutes(30));
+			}
+
+			// 🔹 Convert Entities → DTOs
+			var quizDtos = quizQuestions.Select(dto => new QuizDto
+			{
+				Question = dto.Question,
+				CorrectAnswer = dto.CorrectAnswer,
+				Options = dto.Options.Select(opt => opt.OptionText).ToList()
+			}).ToList();
+
+			return quizDtos;
+		}
+
+
+
+
+		private Guid GetCurrentUserId()
+		{
+			var userIdString = _httpContextAccessor.HttpContext?.Session.GetString("UserId");
+			if (string.IsNullOrEmpty(userIdString))
+				throw new UnauthorizedAccessException("User not logged in.");
+
+			return Guid.Parse(userIdString);
 		}
 	}
 }

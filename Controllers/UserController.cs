@@ -66,7 +66,7 @@ namespace Skill_Matrix.Controllers
 			HttpContext.Session.SetString("UserEmail", user.Email);
 
 			TempData["Message"] = "Login successful!";
-			return RedirectToAction("GetAllSkills", "skill");
+			return RedirectToAction("Index", "Home");
 		}
 
 		//[HttpGet]

@@ -1,25 +1,25 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Skill_Matrix.Entities
 {
 	public class QuizResult : BaseEnitity
 	{
-		[ForeignKey("User")]
 		public Guid UserId { get; set; }
+		public User User { get; set; }
 
-		[ForeignKey("Skill")]
 		public Guid SkillId { get; set; }
+		public Skill Skill { get; set; }
 
-		public int Score { get; set; } // Score as percentage (0-100)
-
+		public int Score { get; set; }
 		[MaxLength(50)]
-		public string ProficiencyLevel { get; set; } // e.g., "Beginner", "Intermediate"
+		public string ProficiencyLevel { get; set; }
+		public int RetakeCount { get; set; } = 0;
+		public int NoOfCorrectAnswers { get; set; }
+		public int NoOfWrongAnswers { get; set; }
 
 		public DateTime DateTaken { get; set; } = DateTime.UtcNow;
 
-		// Navigation properties
-		public User User { get; set; }
-		public Skill Skill { get; set; }
+		public List<QuizQuestions> QuizQuestions { get; set; } = new();
+		public List<Suggestion> Suggestions { get; set; } = new();
 	}
 }

@@ -19,6 +19,63 @@ namespace Skill_Matrix.Migrations
                 .HasAnnotation("ProductVersion", "8.0.17")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
+            modelBuilder.Entity("Skill_Matrix.Entities.Options", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("OptionText")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("QuizQuestionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuizQuestionId");
+
+                    b.ToTable("Options");
+                });
+
+            modelBuilder.Entity("Skill_Matrix.Entities.QuizQuestions", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("CorrectAnswer")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Question")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid?>("QuizResultId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("SkillId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuizResultId");
+
+                    b.HasIndex("SkillId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("QuizQuestions");
+                });
+
             modelBuilder.Entity("Skill_Matrix.Entities.QuizResult", b =>
                 {
                     b.Property<Guid>("Id")
@@ -28,10 +85,19 @@ namespace Skill_Matrix.Migrations
                     b.Property<DateTime>("DateTaken")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<int>("NoOfCorrectAnswers")
+                        .HasColumnType("int");
+
+                    b.Property<int>("NoOfWrongAnswers")
+                        .HasColumnType("int");
+
                     b.Property<string>("ProficiencyLevel")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
+
+                    b.Property<int>("RetakeCount")
+                        .HasColumnType("int");
 
                     b.Property<int>("Score")
                         .HasColumnType("int");
@@ -84,6 +150,14 @@ namespace Skill_Matrix.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid>("QuizResultId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("ResourceLink")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
                     b.Property<DateTime>("SavedAt")
                         .HasColumnType("datetime(6)");
 
@@ -99,6 +173,8 @@ namespace Skill_Matrix.Migrations
                         .HasColumnType("char(36)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("QuizResultId");
 
                     b.HasIndex("SkillId");
 
@@ -151,12 +227,66 @@ namespace Skill_Matrix.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Skill_Matrix.Entities.WrongAnswers", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("AnswerText")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("QuizQuestionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuizQuestionId");
+
+                    b.ToTable("WrongAnswers");
+                });
+
+            modelBuilder.Entity("Skill_Matrix.Entities.Options", b =>
+                {
+                    b.HasOne("Skill_Matrix.Entities.QuizQuestions", "QuizQuestion")
+                        .WithMany("Options")
+                        .HasForeignKey("QuizQuestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("QuizQuestion");
+                });
+
+            modelBuilder.Entity("Skill_Matrix.Entities.QuizQuestions", b =>
+                {
+                    b.HasOne("Skill_Matrix.Entities.QuizResult", null)
+                        .WithMany("QuizQuestions")
+                        .HasForeignKey("QuizResultId");
+
+                    b.HasOne("Skill_Matrix.Entities.Skill", "Skill")
+                        .WithMany("QuizQuestions")
+                        .HasForeignKey("SkillId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Skill_Matrix.Entities.User", "User")
+                        .WithMany("QuizQuestions")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Skill");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Skill_Matrix.Entities.QuizResult", b =>
                 {
                     b.HasOne("Skill_Matrix.Entities.Skill", "Skill")
                         .WithMany("QuizResults")
                         .HasForeignKey("SkillId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Skill_Matrix.Entities.User", "User")
@@ -183,10 +313,16 @@ namespace Skill_Matrix.Migrations
 
             modelBuilder.Entity("Skill_Matrix.Entities.Suggestion", b =>
                 {
+                    b.HasOne("Skill_Matrix.Entities.QuizResult", "QuizResult")
+                        .WithMany("Suggestions")
+                        .HasForeignKey("QuizResultId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Skill_Matrix.Entities.Skill", "Skill")
                         .WithMany("Suggestions")
                         .HasForeignKey("SkillId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Skill_Matrix.Entities.User", "User")
@@ -195,13 +331,42 @@ namespace Skill_Matrix.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("QuizResult");
+
                     b.Navigation("Skill");
 
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Skill_Matrix.Entities.WrongAnswers", b =>
+                {
+                    b.HasOne("Skill_Matrix.Entities.QuizQuestions", "QuizQuestion")
+                        .WithMany("WrongAnswers")
+                        .HasForeignKey("QuizQuestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("QuizQuestion");
+                });
+
+            modelBuilder.Entity("Skill_Matrix.Entities.QuizQuestions", b =>
+                {
+                    b.Navigation("Options");
+
+                    b.Navigation("WrongAnswers");
+                });
+
+            modelBuilder.Entity("Skill_Matrix.Entities.QuizResult", b =>
+                {
+                    b.Navigation("QuizQuestions");
+
+                    b.Navigation("Suggestions");
+                });
+
             modelBuilder.Entity("Skill_Matrix.Entities.Skill", b =>
                 {
+                    b.Navigation("QuizQuestions");
+
                     b.Navigation("QuizResults");
 
                     b.Navigation("Suggestions");
@@ -209,6 +374,8 @@ namespace Skill_Matrix.Migrations
 
             modelBuilder.Entity("Skill_Matrix.Entities.User", b =>
                 {
+                    b.Navigation("QuizQuestions");
+
                     b.Navigation("QuizResults");
 
                     b.Navigation("Skills");

@@ -1,25 +1,25 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Skill_Matrix.Entities
 {
 	public class Suggestion : BaseEnitity
 	{
-
-		[ForeignKey("User")]
 		public Guid UserId { get; set; }
+		public User User { get; set; }
 
-		[ForeignKey("Skill")]
 		public Guid SkillId { get; set; }
+		public Skill Skill { get; set; }
 
-		[Required]
-		[MaxLength(200)]
+		public Guid QuizResultId { get; set; }
+		public QuizResult QuizResult { get; set; }
+
+		[Required, MaxLength(200)]
 		public string Suggestions { get; set; }
 
-		public DateTime SavedAt { get; set; } = DateTime.UtcNow;
+		[Required, MaxLength(200)]
+		public string ResourceLink { get; set; }
 
-		// Navigation properties
-		public User User { get; set; }
-		public Skill Skill { get; set; }
+		public DateTime SavedAt { get; set; } = DateTime.UtcNow;
 	}
 }
+
