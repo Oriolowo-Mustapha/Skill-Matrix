@@ -6,14 +6,36 @@ using System.Text;
 using System.Text.Json;
 namespace Skill_Matrix.Implementations.Services;
 
-public class SuggestionService(IQuizRepository quizRepository, ISuggestionRepository suggestionRepository, ISkillRepository skillRepository, IConfiguration configuration, string geminiApiKey, HttpClient httpClient, IHttpContextAccessor httpContextAccessor) : ISuggestionService
+public class SuggestionService : ISuggestionService
 {
+	private readonly IQuizRepository _quizRepository;
+	private readonly ISuggestionRepository _suggestionRepository;
+	private readonly ISkillRepository _skillRepository;
+	private readonly HttpClient _httpClient;
+	private readonly IHttpContextAccessor _httpContextAccessor;
+	private readonly string _apiKey;
 
+	public SuggestionService(
+		IQuizRepository quizRepository,
+		ISuggestionRepository suggestionRepository,
+		ISkillRepository skillRepository,
+		IConfiguration configuration,
+		HttpClient httpClient,
+		IHttpContextAccessor httpContextAccessor)
+	{
+		_quizRepository = quizRepository;
+		_suggestionRepository = suggestionRepository;
+		_skillRepository = skillRepository;
+		_httpClient = httpClient;
+		_httpContextAccessor = httpContextAccessor;
+
+		// ✅ get API key from appsettings.json or Render environment variables
+		_apiKey = configuration["Gemini:ApiKey"];
+	}
 	public async Task<List<SuggestionDto>> GetSuggestionsAsync(Guid QuizResultId)
 	{
-		geminiApiKey = configuration["Gemini:ApiKey"];
 
-		var Result = await quizRepository.GetQuizResultById(QuizResultId);
+		var Result = await _quizRepository.GetQuizResultById(QuizResultId);
 		if (Result == null)
 		{
 			return new List<SuggestionDto>
@@ -22,11 +44,11 @@ public class SuggestionService(IQuizRepository quizRepository, ISuggestionReposi
 		};
 		}
 
-		var Skill = await skillRepository.GetByIdAsync(Result.SkillId);
+		var Skill = await _skillRepository.GetByIdAsync(Result.SkillId);
 		var skillName = Skill.SkillName;
 		var ProficiencyLevel = Result.ProficiencyLevel;
 
-		var Question = await quizRepository.GetByBatchId(Result.QuizBatchId);
+		var Question = await _quizRepository.GetByBatchId(Result.QuizBatchId);
 		var WrongAnswer = new List<string>();
 		foreach (var item in Question)
 		{
@@ -79,11 +101,11 @@ public class SuggestionService(IQuizRepository quizRepository, ISuggestionReposi
 
 		using var request = new HttpRequestMessage(
 			HttpMethod.Post,
-			$"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={geminiApiKey}"
+			$"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={_apiKey}"
 		);
 		request.Content = content;
 
-		var response = await httpClient.SendAsync(request);
+		var response = await _httpClient.SendAsync(request);
 
 		if (!response.IsSuccessStatusCode)
 		{
@@ -121,7 +143,7 @@ public class SuggestionService(IQuizRepository quizRepository, ISuggestionReposi
 	public async Task SaveSuggestionAsync(Guid quizResultId, SuggestionDto suggestionDto)
 	{
 		var UserId = GetCurrentUserId();
-		var quizResult = await quizRepository.GetQuizResultById(quizResultId);
+		var quizResult = await _quizRepository.GetQuizResultById(quizResultId);
 		var suggestion = new Suggestion
 		{
 			Id = suggestionDto.Id != Guid.Empty ? suggestionDto.Id : Guid.NewGuid(),
@@ -133,7 +155,7 @@ public class SuggestionService(IQuizRepository quizRepository, ISuggestionReposi
 			SavedAt = DateTime.UtcNow
 		};
 
-		await suggestionRepository.AddAsync(suggestion);
+		await _suggestionRepository.AddAsync(suggestion);
 	}
 
 
@@ -177,7 +199,7 @@ public class SuggestionService(IQuizRepository quizRepository, ISuggestionReposi
 
 	private Guid GetCurrentUserId()
 	{
-		var userIdString = httpContextAccessor.HttpContext?.Session.GetString("UserId");
+		var userIdString = _httpContextAccessor.HttpContext?.Session.GetString("UserId");
 		if (string.IsNullOrEmpty(userIdString))
 			throw new UnauthorizedAccessException("User not logged in.");
 

@@ -1,4 +1,5 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Npgsql; // ✅ PostgreSQL provider
 using Skill_Matrix.Data;
 using Skill_Matrix.Implementations.Repository;
 using Skill_Matrix.Implementations.Services;
@@ -12,11 +13,41 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Register the DbContext with MySQL
-builder.Services.AddDbContext<SkillMatrixDbContext>(options =>
-	options.UseMySQL(builder.Configuration.GetConnectionString("DefaultConnection")));
+// ✅ Build PostgreSQL connection string from Render env vars
+string BuildConnectionString(IConfiguration cfg)
+{
+	var host = Environment.GetEnvironmentVariable("DB_HOST");
+	var db = Environment.GetEnvironmentVariable("DB_NAME");
+	var user = Environment.GetEnvironmentVariable("DB_USERNAME");
+	var password = Environment.GetEnvironmentVariable("DB_PASSWORD");
+	var port = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";
 
-// JWT Configuration (for token generation)
+	if (!string.IsNullOrEmpty(host) && !string.IsNullOrEmpty(db) &&
+		!string.IsNullOrEmpty(user) && !string.IsNullOrEmpty(password))
+	{
+		var csb = new NpgsqlConnectionStringBuilder
+		{
+			Host = host,
+			Port = int.Parse(port),
+			Username = user,
+			Password = password,
+			Database = db,
+			SslMode = SslMode.Require,
+			TrustServerCertificate = true
+		};
+		return csb.ToString();
+	}
+
+	// fallback for local dev
+	return cfg.GetConnectionString("DefaultConnection");
+}
+
+var connString = BuildConnectionString(builder.Configuration);
+
+builder.Services.AddDbContext<SkillMatrixDbContext>(options =>
+	options.UseNpgsql(connString)); // ✅ switched to PostgreSQL
+
+// JWT Configuration
 var jwtSettingsSection = builder.Configuration.GetSection("JwtSettings");
 builder.Services.Configure<JwtSettings>(jwtSettingsSection);
 
@@ -36,7 +67,6 @@ builder.Services.AddScoped<ISuggestionService, SuggestionService>();
 
 builder.Services.AddHttpClient();
 
-
 // Add Session
 builder.Services.AddSession(options =>
 {
@@ -51,7 +81,6 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
 	app.UseExceptionHandler("/Home/Error");
-	// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
 	app.UseHsts();
 }
 
@@ -60,6 +89,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 app.UseSession();
+
 app.Use(async (context, next) =>
 {
 	var token = context.Session.GetString("JwtToken");
@@ -69,6 +99,7 @@ app.Use(async (context, next) =>
 	}
 	await next();
 });
+
 app.UseAuthorization();
 
 app.MapControllerRoute(
