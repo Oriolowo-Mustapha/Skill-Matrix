@@ -4,7 +4,7 @@ namespace Skill_Matrix.Interfaces.Services
 {
 	public interface ISuggestionService
 	{
-		Task<List<SuggestionDto>> GetSuggestionsAsync(string skillName, string proficiencyLevel);
-		Task SaveSuggestionAsync(SuggestionDto suggestionDto);
+		Task<List<SuggestionDto>> GetSuggestionsAsync(Guid QuizResultId);
+		Task SaveSuggestionAsync(Guid quizResultId, SuggestionDto suggestionDto);
 	}
 }

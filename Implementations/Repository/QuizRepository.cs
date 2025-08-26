@@ -23,25 +23,48 @@ namespace Skill_Matrix.Implementations.Repository
 		public async Task<List<QuizQuestions>> GetBySkillIdAsync(Guid userId, Guid skillId)
 		{
 			return await _context.QuizQuestions
-				.Where(q => q.SkillId == skillId && q.UserId == userId)
-				.OrderByDescending(q => q.CreatedAt)
+				.Where(q => q.QuizBatch.SkillId == skillId && q.QuizBatch.UserId == userId)
+				.OrderByDescending(q => q.QuizBatch.CreatedAt)
 				.Include(q => q.Options)
+				.Include(q => q.WrongAnswers)
 				.ToListAsync();
 		}
-		public async Task<QuizResult> GetLatestByUserAndSkillAsync(Guid userId, Guid skillId)
+
+		public async Task<QuizResult> GetQuizResultById(Guid QuizResultId)
 		{
 			return await _context.QuizResults
-				.Where(r => r.UserId == userId && r.SkillId == skillId)
-				.OrderByDescending(r => r.DateTaken) // latest attempt
-				.Include(r => r.QuizQuestions)
-					.ThenInclude(q => q.WrongAnswers)
+				.Where(q => q.Id == QuizResultId)
+				.Include(q => q.Skill)
 				.FirstOrDefaultAsync();
 		}
 
-		public async Task AddRangeAsync(List<QuizQuestions> questions)
+		public async Task<QuizResult> GetLatestByUserAndSkillAsync(Guid userId, Guid skillId)
 		{
-			await _context.QuizQuestions.AddRangeAsync(questions);
+			return await _context.QuizResults
+				.Where(r => r.QuizBatch.UserId == userId && r.QuizBatch.SkillId == skillId)
+				.OrderByDescending(r => r.DateTaken)
+				.Include(r => r.QuizBatch)
+					.ThenInclude(b => b.Questions)
+						.ThenInclude(q => q.Options)
+				.Include(r => r.QuizBatch)
+					.ThenInclude(b => b.Questions)
+						.ThenInclude(q => q.WrongAnswers)
+				.FirstOrDefaultAsync();
+		}
+
+
+		public async Task AddQuestionAsync(QuizBatch questions)
+		{
+			await _context.QuizBatches.AddRangeAsync(questions);
 			await _context.SaveChangesAsync();
+		}
+
+		public async Task<List<QuizQuestions>> GetByBatchId(int BatchId)
+		{
+			return await _context.QuizQuestions
+				.Where(q => q.QuizBatchId == BatchId)
+				.Include(q => q.WrongAnswers)
+				.ToListAsync();
 		}
 	}
 }

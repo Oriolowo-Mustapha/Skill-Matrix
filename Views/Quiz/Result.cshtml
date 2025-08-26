@@ -46,8 +46,8 @@
                 </div>
             </div>
             <div class="action-buttons">
-                <a href="#" class="btn btn-primary">Continue Learning</a>
-                <a href="#" class="btn btn-secondary">View Result</a>
+                <a asp-controller="Quiz" asp-action="ContinueLearning" class="btn btn-primary">Continue Learning</a>
+                <a asp-controller="Quiz" asp-action="ViewResult" asp-route-QuizId="@Model.Id" class="btn btn-secondary">View Result</a>
             </div>
         </div>
     </div>

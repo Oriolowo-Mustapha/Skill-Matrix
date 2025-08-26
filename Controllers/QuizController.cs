@@ -1,18 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Skill_Matrix.Interfaces.Repository;
 using Skill_Matrix.Interfaces.Services;
+using Skill_Matrix.ViewModel;
 
 namespace Skill_Matrix.Controllers
 {
-	public class QuizController : Controller
+	public class QuizController(IWrongAnswersRepository wrongAnswersRepository, IQuizService _quizService, ISkillService _skillService, IQuizRepository _quizRepository, ISkillRepository skillRepository) : Controller
 	{
-		private readonly IQuizService _quizService;
-		private readonly ISkillService _skillService;
-
-		public QuizController(IQuizService quizService, ISkillService skillService)
-		{
-			_quizService = quizService;
-			_skillService = skillService;
-		}
 
 		[HttpPost]
 		public async Task<IActionResult> TakeQuiz(string skillName, string proficiencyLevel, int questionCount)
@@ -97,6 +91,38 @@ namespace Skill_Matrix.Controllers
 				TempData["Error"] = $"Unable to Submit Quiz. Please try again.\n{ex}";
 				var quiz = _quizService.GetQuizQuestionsFromCache(skillId);
 				return View("TakeQuiz", quiz);
+			}
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> ViewResult(Guid QuizId)
+		{
+			try
+			{
+				var Result = await _quizRepository.GetQuizResultById(QuizId);
+				var BatchId = Result.QuizBatchId;
+				var WrongAnswers = await wrongAnswersRepository.GetByBatchId(BatchId);
+				var Questions = await _quizRepository.GetByBatchId(BatchId);
+				var result = new ViewResultViewModel()
+				{
+					SkillName = Result.Skill.SkillName,
+					DateTaken = Result.DateTaken,
+					TotalQuestions = Questions.Count,
+					Score = Result.Score,
+					ProficiencyLevel = Result.ProficiencyLevel,
+					NoOfCorrectAnswers = Result.NoOfCorrectAnswers,
+					NoOfWrongAnswers = Result.NoOfWrongAnswers,
+					RetakeCount = Result.RetakeCount,
+					QuizQuestions = Questions,
+					WrongAnswers = WrongAnswers
+				};
+
+				return View("ViewResult", result);
+			}
+			catch (Exception ex)
+			{
+				TempData["Error"] = $"Unable to fetch result. Please try again.\n{ex.Message}";
+				return View();
 			}
 		}
 

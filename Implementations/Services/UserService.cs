@@ -1,4 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.IdentityModel.Tokens;
 using Skill_Matrix.DTOs;
 using Skill_Matrix.Entities;
 using Skill_Matrix.Interfaces.Repository;
@@ -14,11 +15,13 @@ namespace Skill_Matrix.Implementations.Services
 	{
 		private readonly IUserRepository _userRepository;
 		private readonly IConfiguration _configuration;
+		private readonly IMemoryCache _cache;
 
-		public UserService(IUserRepository userRepository, IConfiguration configuration)
+		public UserService(IUserRepository userRepository, IConfiguration configuration, IMemoryCache cache)
 		{
 			_userRepository = userRepository;
 			_configuration = configuration;
+			_cache = cache;
 		}
 
 		public async Task<UserProfileDto> RegisterAsync(UserDto registerDto)
@@ -48,11 +51,17 @@ namespace Skill_Matrix.Implementations.Services
 
 		public async Task<User> GetUserForAuthentication(UserLoginDto loginDto)
 		{
-			var user = await _userRepository.GetByEmailOrUsernameAsync(loginDto.UsernameOrEmail);
-
-			if (user == null || HashPassword(loginDto.Password) != user.PasswordHash)
+			if (!_cache.TryGetValue("UsernameOrEmail", out User user) && !_cache.TryGetValue("Password", out user))
 			{
-				return null;
+				user = await _userRepository.GetByEmailOrUsernameAsync(loginDto.UsernameOrEmail);
+
+				if (user == null || HashPassword(loginDto.Password) != user.PasswordHash)
+				{
+					return null;
+				}
+
+				_cache.Set("UsernameOrEmail", loginDto.UsernameOrEmail);
+				_cache.Set("Password", loginDto.Password);
 			}
 
 			return user;

@@ -25,6 +25,6 @@ namespace Skill_Matrix.Entities
 		public List<Skill> Skills { get; set; } = new();
 		public List<QuizResult> QuizResults { get; set; } = new();
 		public List<Suggestion> Suggestions { get; set; } = new();
-		public List<QuizQuestions> QuizQuestions { get; set; } = new();
+		public List<QuizBatch> QuizBatches { get; set; } = new();
 	}
 }

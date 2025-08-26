@@ -10,6 +10,7 @@ namespace Skill_Matrix.Data
 		public DbSet<User> Users { get; set; }
 		public DbSet<Skill> Skills { get; set; }
 		public DbSet<QuizResult> QuizResults { get; set; }
+		public DbSet<QuizBatch> QuizBatches { get; set; }
 		public DbSet<QuizQuestions> QuizQuestions { get; set; }
 		public DbSet<Options> Options { get; set; }
 		public DbSet<WrongAnswers> WrongAnswers { get; set; }
@@ -42,33 +43,7 @@ namespace Skill_Matrix.Data
 				.HasForeignKey(qr => qr.SkillId)
 				.OnDelete(DeleteBehavior.Cascade);
 
-			// User → QuizQuestion
-			modelBuilder.Entity<QuizQuestions>()
-				.HasOne(qr => qr.User)
-				.WithMany(u => u.QuizQuestions)
-				.HasForeignKey(qr => qr.UserId)
-				.OnDelete(DeleteBehavior.Cascade);
 
-			// Skill → QuizQuestion
-			modelBuilder.Entity<QuizQuestions>()
-				.HasOne(qr => qr.Skill)
-				.WithMany(s => s.QuizQuestions)
-				.HasForeignKey(qr => qr.SkillId)
-				.OnDelete(DeleteBehavior.Cascade);
-
-			// QuizQuestions → Options
-			modelBuilder.Entity<Options>()
-				.HasOne(o => o.QuizQuestion)
-				.WithMany(q => q.Options)
-				.HasForeignKey(o => o.QuizQuestionId)
-				.OnDelete(DeleteBehavior.Cascade);
-
-			// QuizQuestions → WrongAnswers
-			modelBuilder.Entity<WrongAnswers>()
-				.HasOne(w => w.QuizQuestion)
-				.WithMany(q => q.WrongAnswers)
-				.HasForeignKey(w => w.QuizQuestionId)
-				.OnDelete(DeleteBehavior.Cascade);
 
 			// Suggestions
 			modelBuilder.Entity<Suggestion>()
@@ -88,6 +63,46 @@ namespace Skill_Matrix.Data
 				.WithMany(qr => qr.Suggestions)
 				.HasForeignKey(s => s.QuizResultId)
 				.OnDelete(DeleteBehavior.Cascade);
+
+			// QuizBatch -> Questions (1:M)
+			modelBuilder.Entity<QuizBatch>()
+				.HasMany(b => b.Questions)
+				.WithOne(q => q.QuizBatch)
+				.HasForeignKey(q => q.QuizBatchId)
+				.OnDelete(DeleteBehavior.Cascade);
+
+			// QuizBatch -> Result (1:1)
+			modelBuilder.Entity<QuizBatch>()
+				.HasOne(b => b.Result)
+				.WithOne(r => r.QuizBatch)
+				.HasForeignKey<QuizResult>(r => r.QuizBatchId)
+				.OnDelete(DeleteBehavior.Cascade);
+
+			modelBuilder.Entity<QuizResult>()
+				.HasIndex(r => r.QuizBatchId)
+				.IsUnique();
+
+			// QuizQuestions -> Options (1:M)
+			modelBuilder.Entity<Options>()
+				.HasOne(o => o.QuizQuestion)
+				.WithMany(q => q.Options)
+				.HasForeignKey(o => o.QuizQuestionId)
+				.OnDelete(DeleteBehavior.Cascade);
+
+			// QuizQuestions -> WrongAnswers (1:M)
+			modelBuilder.Entity<WrongAnswers>()
+				.HasOne(w => w.QuizQuestion)
+				.WithMany(q => q.WrongAnswers)
+				.HasForeignKey(w => w.QuizQuestionId)
+				.OnDelete(DeleteBehavior.Cascade);
+
+			// QuizBatch --> WrongAnswers (1:M)
+			modelBuilder.Entity<WrongAnswers>()
+				.HasOne(w => w.QuizBatch)
+				.WithMany(q => q.WrongAnswers)
+				.HasForeignKey(w => w.QuizBatchId)
+				.OnDelete(DeleteBehavior.Cascade);
+
 		}
 	}
 }

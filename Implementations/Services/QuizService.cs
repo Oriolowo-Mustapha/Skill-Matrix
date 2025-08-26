@@ -95,7 +95,7 @@ namespace SkillMatrix.Services
 			if (skill == null || skill.UserId != userId)
 				throw new Exception("Invalid skill or user.");
 
-
+			// 2. Get quiz questions
 			var quizQuestions = await _quizResultRepository.GetBySkillIdAsync(userId, skillId);
 			if (quizQuestions == null || !quizQuestions.Any())
 				throw new Exception("No quiz questions found for this skill.");
@@ -107,6 +107,14 @@ namespace SkillMatrix.Services
 			int correctCount = 0;
 			int wrongCount = 0;
 			var quizResultQuestions = new List<QuizQuestions>();
+
+			// Create batch first (so we can use its Id)
+			var quizBatch = new QuizBatch
+			{
+				UserId = userId,
+				SkillId = skillId,
+				CreatedAt = DateTime.UtcNow
+			};
 
 			for (int i = 0; i < quizQuestions.Count; i++)
 			{
@@ -121,14 +129,21 @@ namespace SkillMatrix.Services
 				else
 				{
 					wrongCount++;
-					// Store wrong answer for review
+
+					// Attach wrong answer to this specific question
 					question.WrongAnswers.Add(new WrongAnswers
 					{
 						AnswerText = userAnswer,
-						QuizQuestion = question
+						QuizQuestionId = question.Id,  // FK set
+						QuizBatch = quizBatch          // link to batch
 					});
 				}
+
+				// Attach this question to batch
+				quizResultQuestions.Add(question);
 			}
+
+			quizBatch.Questions = quizResultQuestions;
 
 			// 4. Calculate score
 			int score = (int)((correctCount / (double)quizQuestions.Count) * 100);
@@ -142,34 +157,32 @@ namespace SkillMatrix.Services
 				_ => "Expert"
 			};
 
-			// 6. Check for existing result (retakes)
 			var previousResult = await _quizResultRepository.GetLatestByUserAndSkillAsync(userId, skillId);
-
 			int retakeCount = previousResult != null ? previousResult.RetakeCount + 1 : 0;
 
-			// 7. Create QuizResult object
+			// 6. Create quiz result
 			var quizResult = new QuizResult
 			{
 				UserId = userId,
 				SkillId = skillId,
+				QuizBatch = quizBatch,
 				Score = score,
 				ProficiencyLevel = proficiencyLevel,
 				RetakeCount = retakeCount,
 				NoOfCorrectAnswers = correctCount,
 				NoOfWrongAnswers = wrongCount,
-				DateTaken = DateTime.UtcNow,
-				QuizQuestions = quizResultQuestions
+				DateTaken = DateTime.UtcNow
 			};
 
-			// 8. Update skill progress
+			// 7. Update skill
 			skill.ProficiencyLevel = proficiencyLevel;
 			skill.LastAssessed = DateTime.UtcNow;
 
-			// 9. Save to DB
+			// 8. Save all
 			await _quizResultRepository.AddAsync(quizResult);
 			await _skillRepository.UpdateAsync(skill);
 
-			// 10. Return DTO
+			// 9. Return DTO
 			return new QuizResultDto
 			{
 				Id = quizResult.Id,
@@ -183,6 +196,8 @@ namespace SkillMatrix.Services
 				RetakeCount = retakeCount
 			};
 		}
+
+
 
 
 		private async Task<List<QuizDto>> ParseQuizFromJsonAsync(string jsonText)
@@ -228,7 +243,12 @@ namespace SkillMatrix.Services
 			if (quizDtos == null || !quizDtos.Any())
 				throw new Exception("No quiz questions to save.");
 
-			var quizQuestions = new List<QuizQuestions>();
+			var batch = new QuizBatch
+			{
+				SkillId = skillId,
+				UserId = userId,
+				CreatedAt = DateTime.UtcNow
+			};
 
 			foreach (var dto in quizDtos)
 			{
@@ -236,21 +256,18 @@ namespace SkillMatrix.Services
 				{
 					Question = dto.Question,
 					CorrectAnswer = dto.CorrectAnswer,
-					SkillId = skillId,
-					UserId = userId,
-					CreatedAt = DateTime.UtcNow,
 					Options = dto.Options.Select(opt => new Options
 					{
 						OptionText = opt
 					}).ToList()
 				};
 
-				quizQuestions.Add(quizQuestion);
+				batch.Questions.Add(quizQuestion);
 			}
 
-			// Save to DB via repository
-			await _quizResultRepository.AddRangeAsync(quizQuestions);
+			await _quizResultRepository.AddQuestionAsync(batch);
 		}
+
 
 		public List<QuizDto> GetQuizQuestionsFromCache(Guid skillId)
 		{
@@ -259,28 +276,30 @@ namespace SkillMatrix.Services
 
 			if (!_cache.TryGetValue(cacheKey, out List<QuizQuestions> quizQuestions))
 			{
-				// Cache miss → Load from DB
-				quizQuestions = _dbContext.QuizQuestions
-					.Where(q => q.SkillId == skillId && q.UserId == userId)
-					.Include(q => q.Options)   // important so Options are loaded
-					.ToList();
+				// Cache miss → Load ONLY the latest batch from DB
+				var latestBatch = _dbContext.QuizBatches
+					.Where(b => b.SkillId == skillId && b.UserId == userId)
+					.OrderByDescending(b => b.CreatedAt)
+					.Include(b => b.Questions)
+						.ThenInclude(q => q.Options)
+					.FirstOrDefault();
+
+				quizQuestions = latestBatch?.Questions ?? new List<QuizQuestions>();
 
 				// Save into cache
 				_cache.Set(cacheKey, quizQuestions, TimeSpan.FromMinutes(30));
 			}
 
 			// 🔹 Convert Entities → DTOs
-			var quizDtos = quizQuestions.Select(dto => new QuizDto
+			var quizDtos = quizQuestions.Select(q => new QuizDto
 			{
-				Question = dto.Question,
-				CorrectAnswer = dto.CorrectAnswer,
-				Options = dto.Options.Select(opt => opt.OptionText).ToList()
+				Question = q.Question,
+				CorrectAnswer = q.CorrectAnswer,
+				Options = q.Options.Select(opt => opt.OptionText).ToList()
 			}).ToList();
 
 			return quizDtos;
 		}
-
-
 
 
 		private Guid GetCurrentUserId()

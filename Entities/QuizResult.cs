@@ -10,6 +10,9 @@ namespace Skill_Matrix.Entities
 		public Guid SkillId { get; set; }
 		public Skill Skill { get; set; }
 
+		public int QuizBatchId { get; set; }
+		public QuizBatch QuizBatch { get; set; }
+
 		public int Score { get; set; }
 		[MaxLength(50)]
 		public string ProficiencyLevel { get; set; }
@@ -19,7 +22,6 @@ namespace Skill_Matrix.Entities
 
 		public DateTime DateTaken { get; set; } = DateTime.UtcNow;
 
-		public List<QuizQuestions> QuizQuestions { get; set; } = new();
 		public List<Suggestion> Suggestions { get; set; } = new();
 	}
 }

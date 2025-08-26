@@ -25,6 +25,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ISkillRepository, SkillRepository>();
 builder.Services.AddScoped<IQuizRepository, QuizRepository>();
+builder.Services.AddScoped<IWrongAnswersRepository, WrongAnswerRepository>();
 builder.Services.AddScoped<ISuggestionRepository, SuggestionRepository>();
 
 // Add Services

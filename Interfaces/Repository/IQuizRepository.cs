@@ -7,6 +7,8 @@ namespace Skill_Matrix.Interfaces.Repository
 		Task AddAsync(QuizResult quizResult);
 		Task<List<QuizQuestions>> GetBySkillIdAsync(Guid userId, Guid skillId);
 		Task<QuizResult> GetLatestByUserAndSkillAsync(Guid userId, Guid skillId);
-		Task AddRangeAsync(List<QuizQuestions> questions);
+		Task AddQuestionAsync(QuizBatch questions);
+		Task<QuizResult> GetQuizResultById(Guid QuizResultId);
+		Task<List<QuizQuestions>> GetByBatchId(int BatchId);
 	}
 }

@@ -1,0 +1,178 @@
+﻿@model Skill_Matrix.ViewModel.ViewResultViewModel
+
+@{
+    ViewData["Title"] = "Assessment Results";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link href="~/css/Assessment.css" rel="stylesheet" />
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Assessment Results
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Assessment Overview -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h4 class="text-primary">@Model.SkillName</h4>
+                            <p class="text-muted mb-1">
+                                <i class="fas fa-calendar-alt me-2"></i>
+                                Date Taken: @Model.DateTaken.ToString("MMM dd, yyyy - hh:mm tt")
+                            </p>
+                            @if (Model.RetakeCount > 0)
+                            {
+                                <p class="text-muted mb-0">
+                                    <i class="fas fa-redo me-2"></i>
+                                    Retake #@Model.RetakeCount
+                                </p>
+                            }
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <div class="d-inline-block">
+                                @{
+                                    var proficiencyClass = Model.ProficiencyLevel.ToLower() switch
+                                    {
+                                        "expert" => "badge-success",
+                                        "advanced" => "badge-info",
+                                        "intermediate" => "badge-warning",
+                                        "beginner" => "badge-secondary",
+                                        _ => "badge-light"
+                                    };
+                                }
+                                <span class="badge @proficiencyClass fs-6 px-3 py-2">
+                                    @Model.ProficiencyLevel Level
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Score Cards -->
+                    <div class="row mb-4">
+                        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                            <div class="card text-center border-primary">
+                                <div class="card-body py-3">
+                                    <h5 class="card-title text-primary mb-1">@Model.Score%</h5>
+                                    <small class="text-muted">Overall Score</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                            <div class="card text-center border-info">
+                                <div class="card-body py-3">
+                                    <h5 class="card-title text-info mb-1">@Model.TotalQuestions</h5>
+                                    <small class="text-muted">Total Questions</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                            <div class="card text-center border-success">
+                                <div class="card-body py-3">
+                                    <h5 class="card-title text-success mb-1">@Model.NoOfCorrectAnswers</h5>
+                                    <small class="text-muted">Correct</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                            <div class="card text-center border-danger">
+                                <div class="card-body py-3">
+                                    <h5 class="card-title text-danger mb-1">@Model.NoOfWrongAnswers</h5>
+                                    <small class="text-muted">Wrong</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-8 col-sm-12 mb-3">
+                            <div class="card text-center border-secondary">
+                                <div class="card-body py-3">
+                                    <div class="progress mb-2" style="height: 10px;">
+                                        <div class="progress-bar bg-success" role="progressbar" 
+                                             style="width: @Model.Score%;" 
+                                             aria-valuenow="@Model.Score" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100"></div>
+                                    </div>
+                                    <small class="text-muted">Progress</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.WrongAnswers != null && Model.WrongAnswers.Any())
+    {
+        <!-- Wrong Answers Section -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-danger text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-times-circle me-2"></i>Review Wrong Answers
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        @for (int i = 0; i < Model.WrongAnswers.Count; i++)
+                        {
+                            var wrongAnswer = Model.WrongAnswers[i];
+                            <div class="border rounded p-3 mb-3 @(i == Model.WrongAnswers.Count - 1 ? "" : "border-bottom")">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <h6 class="text-danger mb-2">
+                                            <span class="badge bg-danger me-2">@(i + 1)</span>
+                                            Question
+                                        </h6>
+                                        <p class="fw-bold mb-3">@wrongAnswer.QuizQuestion.Question</p>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6 mb-2">
+                                                <div class="alert alert-success py-2 mb-0">
+                                                    <small class="fw-bold text-success">
+                                                        <i class="fas fa-check-circle me-1"></i>Correct Answer:
+                                                    </small>
+                                                    <div class="mt-1">@wrongAnswer.QuizQuestion.CorrectAnswer</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-2">
+                                                <div class="alert alert-danger py-2 mb-0">
+                                                    <small class="fw-bold text-danger">
+                                                        <i class="fas fa-times-circle me-1"></i>Your Answer:
+                                                    </small>
+                                                    <div class="mt-1">@wrongAnswer.AnswerText</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Action Buttons -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <a href="@Url.Action("Index", "Assessment")" class="btn btn-outline-primary me-2">
+                <i class="fas fa-list me-2"></i>Back to Assessments
+            </a>
+            @if (Model.Score < 70) // Assuming 70% is passing score
+            {
+                <a href="@Url.Action("Retake", "Assessment", new { skill = Model.SkillName })" class="btn btn-warning me-2">
+                    <i class="fas fa-redo me-2"></i>Retake Assessment
+                </a>
+            }
+            <button onclick="window.print()" class="btn btn-info">
+                <i class="fas fa-print me-2"></i>Print Results
+            </button>
+        </div>
+    </div>
+</div>

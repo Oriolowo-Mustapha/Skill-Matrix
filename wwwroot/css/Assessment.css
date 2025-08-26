@@ -1,0 +1,182 @@
+﻿/* assessment-results.css */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+
+body {
+    font-family: 'Montserrat', sans-serif !important;
+    background: linear-gradient(135deg, #2575fc, #6a11cb);
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px 0;
+}
+
+.container {
+    font-family: 'Montserrat', sans-serif;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: none !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 15px !important;
+}
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15) !important;
+    }
+
+.card-header {
+    background: linear-gradient(135deg, #2575fc, #6a11cb) !important;
+    border: none !important;
+    border-radius: 15px 15px 0 0 !important;
+    padding: 20px;
+}
+
+    .card-header h3, .card-header h4 {
+        font-weight: 600;
+        font-family: 'Montserrat', sans-serif;
+    }
+
+.card-body {
+    padding: 25px;
+    font-family: 'Montserrat', sans-serif;
+}
+
+h4, h5, h6 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+}
+
+p, small, div {
+    font-family: 'Montserrat', sans-serif;
+}
+
+.btn {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    border-radius: 25px;
+    padding: 10px 25px;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.btn-outline-primary {
+    border: 2px solid #2575fc;
+    color: #2575fc;
+    background: transparent;
+}
+
+    .btn-outline-primary:hover {
+        background: linear-gradient(135deg, #2575fc, #6a11cb);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(37, 117, 252, 0.4);
+    }
+
+.btn-warning {
+    background: linear-gradient(135deg, #ffc107, #ff8c00);
+    color: white;
+}
+
+    .btn-warning:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 193, 7, 0.4);
+    }
+
+.btn-info {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    color: white;
+}
+
+    .btn-info:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(23, 162, 184, 0.4);
+    }
+
+.badge-success {
+    background: linear-gradient(135deg, #28a745, #20c997) !important;
+    color: white !important;
+    font-weight: 600;
+}
+
+.badge-info {
+    background: linear-gradient(135deg, #17a2b8, #6f42c1) !important;
+    color: white !important;
+    font-weight: 600;
+}
+
+.badge-warning {
+    background: linear-gradient(135deg, #ffc107, #fd7e14) !important;
+    color: white !important;
+    font-weight: 600;
+}
+
+.badge-secondary {
+    background: linear-gradient(135deg, #6c757d, #495057) !important;
+    color: white !important;
+    font-weight: 600;
+}
+
+.badge-light {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef) !important;
+    color: #495057 !important;
+    font-weight: 600;
+}
+
+.text-primary {
+    color: #2575fc !important;
+}
+
+.progress-bar {
+    background: linear-gradient(135deg, #2575fc, #6a11cb) !important;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(32, 201, 151, 0.1));
+    border: 1px solid rgba(40, 167, 69, 0.3);
+    border-radius: 10px;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.1), rgba(255, 99, 132, 0.1));
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    border-radius: 10px;
+}
+
+.border-primary {
+    border-color: #2575fc !important;
+}
+
+.border-info {
+    border-color: #17a2b8 !important;
+}
+
+.border-success {
+    border-color: #28a745 !important;
+}
+
+.border-danger {
+    border-color: #dc3545 !important;
+}
+
+.border-secondary {
+    border-color: #6c757d !important;
+}
+
+@media print {
+    body {
+        background: white !important;
+    }
+
+    .btn, .card-header {
+        display: none !important;
+    }
+
+    .card {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+        background: white !important;
+    }
+}
