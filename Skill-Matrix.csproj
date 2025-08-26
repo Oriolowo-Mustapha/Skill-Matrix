@@ -5,6 +5,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Skill_Matrix</RootNamespace>
+    <UserSecretsId>9b10cae2-7db8-49de-b92e-bf40c61ba92f</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerfileContext>.</DockerfileContext>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +17,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
     <PackageReference Include="MySql.EntityFrameworkCore" Version="9.0.3" />
     <PackageReference Include="NewId" Version="4.0.1" />
     <PackageReference Include="OpenAI" Version="2.2.0" />

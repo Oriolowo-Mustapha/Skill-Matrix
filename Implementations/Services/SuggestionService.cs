@@ -106,14 +106,14 @@ public class SuggestionService(IQuizRepository quizRepository, ISuggestionReposi
 
 		// Parse into DTO list
 		var suggestions = ParseSuggestionsJson(geminiContent);
-		foreach (var item in suggestions)
-		{
-			var suggest = new Suggestion()
-			{
-				Id = item.Id,
-			};
-			await suggestionRepository.AddAsync(item);
-		}
+		//foreach (var item in suggestions)
+		//{
+		//	var suggest = new Suggestion()
+		//	{
+		//		Id = item.Id,
+		//	};
+		//	await suggestionRepository.AddAsync(item);
+		//}
 
 		return suggestions;
 	}
