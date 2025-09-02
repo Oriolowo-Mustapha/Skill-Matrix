@@ -164,7 +164,7 @@
             <a href="@Url.Action("Index", "Assessment")" class="btn btn-outline-primary me-2">
                 <i class="fas fa-list me-2"></i>Back to Assessments
             </a>
-            @if (Model.Score < 70) // Assuming 70% is passing score
+            @if (Model.Score < 70) 
             {
                 <a href="@Url.Action("Retake", "Assessment", new { skill = Model.SkillName })" class="btn btn-warning me-2">
                     <i class="fas fa-redo me-2"></i>Retake Assessment

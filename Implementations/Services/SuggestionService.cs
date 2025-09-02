@@ -1,4 +1,6 @@
-﻿using Skill_Matrix.DTOs;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Skill_Matrix.Data;
+using Skill_Matrix.DTOs;
 using Skill_Matrix.Entities;
 using Skill_Matrix.Interfaces.Repository;
 using Skill_Matrix.Interfaces.Services;
@@ -14,6 +16,8 @@ public class SuggestionService : ISuggestionService
 	private readonly HttpClient _httpClient;
 	private readonly IHttpContextAccessor _httpContextAccessor;
 	private readonly string _apiKey;
+	private readonly IMemoryCache _memoryCache;
+	private readonly SkillMatrixDbContext _dbContext;
 
 	public SuggestionService(
 		IQuizRepository quizRepository,
@@ -21,13 +25,15 @@ public class SuggestionService : ISuggestionService
 		ISkillRepository skillRepository,
 		IConfiguration configuration,
 		HttpClient httpClient,
-		IHttpContextAccessor httpContextAccessor)
+		IHttpContextAccessor httpContextAccessor, IMemoryCache memoryCache, SkillMatrixDbContext dbContext)
 	{
 		_quizRepository = quizRepository;
 		_suggestionRepository = suggestionRepository;
 		_skillRepository = skillRepository;
 		_httpClient = httpClient;
 		_httpContextAccessor = httpContextAccessor;
+		_memoryCache = memoryCache;
+		_dbContext = dbContext;
 
 		// ✅ get API key from appsettings.json or Render environment variables
 		_apiKey = configuration["Gemini:ApiKey"];
@@ -128,34 +134,46 @@ public class SuggestionService : ISuggestionService
 
 		// Parse into DTO list
 		var suggestions = ParseSuggestionsJson(geminiContent);
-		//foreach (var item in suggestions)
-		//{
-		//	var suggest = new Suggestion()
-		//	{
-		//		Id = item.Id,
-		//	};
-		//	await suggestionRepository.AddAsync(item);
-		//}
+		foreach (var item in suggestions)
+		{
+			var suggest = new Suggestion()
+			{
+				Id = item.Id,
+				UserId = GetCurrentUserId(),
+				SkillId = Skill.Id,
+				QuizResultId = QuizResultId,
+				Suggestions = item.Suggestions,
+				ResourceLink = item.ResourseLienk,
+				SavedAt = DateTime.UtcNow
 
+			};
+			await _suggestionRepository.AddAsync(suggest);
+		}
+		_memoryCache.Set($"Suggestions_{QuizResultId}", suggestions, TimeSpan.FromHours(1));
+		await SaveSuggestionAsync(QuizResultId, suggestions);
 		return suggestions;
 	}
 
-	public async Task SaveSuggestionAsync(Guid quizResultId, SuggestionDto suggestionDto)
+	public async Task SaveSuggestionAsync(Guid quizResultId, List<SuggestionDto> suggestionDto)
 	{
 		var UserId = GetCurrentUserId();
 		var quizResult = await _quizRepository.GetQuizResultById(quizResultId);
-		var suggestion = new Suggestion
-		{
-			Id = suggestionDto.Id != Guid.Empty ? suggestionDto.Id : Guid.NewGuid(),
-			UserId = UserId,
-			SkillId = quizResult.SkillId,
-			QuizResultId = quizResultId,
-			ResourceLink = suggestionDto.ResourseLienk,
-			Suggestions = suggestionDto.Suggestions,
-			SavedAt = DateTime.UtcNow
-		};
 
-		await _suggestionRepository.AddAsync(suggestion);
+		foreach (var dto in suggestionDto)
+		{
+			var suggestion = new Suggestion
+			{
+				Id = dto.Id != Guid.Empty ? dto.Id : Guid.NewGuid(),
+				UserId = UserId,
+				SkillId = quizResult.SkillId,
+				QuizResultId = quizResultId,
+				ResourceLink = dto.ResourseLienk,
+				Suggestions = dto.Suggestions,
+				SavedAt = DateTime.UtcNow
+			};
+
+			await _suggestionRepository.AddAsync(suggestion);
+		}
 	}
 
 
@@ -196,6 +214,32 @@ public class SuggestionService : ISuggestionService
 			};
 		}
 	}
+	public List<SuggestionDto> GetSuggestionsFromCache(Guid QuizResultId)
+	{
+		var cacheKey = $"Suggestions_{QuizResultId}";
+		if (!_memoryCache.TryGetValue(cacheKey, out List<Suggestion> suggestions))
+		{
+			var suggestion = _dbContext.Suggestions
+				.Where(s => s.QuizResultId == QuizResultId)
+				.ToList();
+
+			suggestions = suggestion ?? new List<Suggestion>();
+
+			// Save into cache
+			_memoryCache.Set(cacheKey, suggestions, TimeSpan.FromHours(1));
+		}
+
+		var SuggestDto = suggestions.Select(s => new SuggestionDto
+		{
+			Id = s.Id,
+			ResourseLienk = s.ResourceLink,
+			Suggestions = s.Suggestions,
+			SavedAt = s.SavedAt
+		}).ToList();
+
+		return SuggestDto;
+	}
+
 
 	private Guid GetCurrentUserId()
 	{

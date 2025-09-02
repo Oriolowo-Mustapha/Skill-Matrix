@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Skill_Matrix.Interfaces.Repository;
 using Skill_Matrix.Interfaces.Services;
 using Skill_Matrix.ViewModel;
 
 namespace Skill_Matrix.Controllers
 {
-	public class QuizController(IWrongAnswersRepository wrongAnswersRepository, IQuizService _quizService, ISkillService _skillService, IQuizRepository _quizRepository, ISkillRepository skillRepository) : Controller
+	public class QuizController(IWrongAnswersRepository wrongAnswersRepository, IQuizService _quizService, ISkillService _skillService, IQuizRepository _quizRepository, ISkillRepository skillRepository, ISuggestionService suggestionService, IMemoryCache cache) : Controller
 	{
 
 		[HttpPost]
@@ -116,12 +117,27 @@ namespace Skill_Matrix.Controllers
 					QuizQuestions = Questions,
 					WrongAnswers = WrongAnswers
 				};
-
+				await suggestionService.GetSuggestionsAsync(Result.Id);
 				return View("ViewResult", result);
 			}
 			catch (Exception ex)
 			{
-				TempData["Error"] = $"Unable to fetch result. Please try again.\n{ex.Message}";
+				TempData["Error"] = $"Unable to fetch result. Please try again.";
+				return View();
+			}
+		}
+
+		[HttpGet]
+		public IActionResult ContinueLearning(Guid QuizResultId)
+		{
+			try
+			{
+				var Suggestion = suggestionService.GetSuggestionsFromCache(QuizResultId);
+				return View("Suggestion", Suggestion);
+			}
+			catch (Exception ex)
+			{
+				TempData["Error"] = "Unable To Fetch Suggestions. Pls Try again";
 				return View();
 			}
 		}

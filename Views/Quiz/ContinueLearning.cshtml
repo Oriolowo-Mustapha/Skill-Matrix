@@ -1,0 +1,150 @@
+﻿@model List<Skill_Matrix.DTOs.SuggestionDto>
+
+@{
+    ViewData["Title"] = "Continue Learning";
+}
+
+@section Styles {
+    <link href="~/css/suggestions.css" rel="stylesheet" />
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
+            <!-- Header Section -->
+            <div class="card header-card mb-4">
+                <div class="card-header text-center">
+                    <h2 class="mb-2">
+                        <i class="fas fa-graduation-cap me-3"></i>Continue Learning
+                    </h2>
+                    <p class="mb-0 fs-5">Personalized suggestions to improve your skills</p>
+                </div>
+            </div>
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            @if (Model != null && Model.Any())
+            {
+                <!-- Suggestions Grid -->
+                <div class="row">
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                        var suggestion = Model[i];
+                        <div class="col-12 col-md-6 col-lg-4 mb-4">
+                            <div class="card suggestion-card h-100">
+                                <div class="card-body d-flex flex-column">
+                                    <div class="suggestion-header mb-3">
+                                        <div class="suggestion-number">
+                                            @(i + 1)
+                                        </div>
+                                        <small class="text-muted ms-auto">
+                                            <i class="fas fa-clock me-1"></i>
+                                            @suggestion.SavedAt.ToString("MMM dd, yyyy")
+                                        </small>
+                                    </div>
+                                    
+                                    <div class="suggestion-content flex-grow-1">
+                                        <h5 class="card-title mb-3">Learning Suggestion</h5>
+                                        <p class="suggestion-text">
+                                            @suggestion.Suggestions
+                                        </p>
+                                    </div>
+                                    
+                                    @if (!string.IsNullOrEmpty(suggestion.ResourseLienk))
+                                    {
+                                        <div class="suggestion-footer mt-auto pt-3">
+                                            <a href="@suggestion.ResourseLienk" 
+                                               target="_blank" 
+                                               class="btn btn-gradient w-100">
+                                                <i class="fas fa-external-link-alt me-2"></i>
+                                                Access Resource
+                                            </a>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="suggestion-footer mt-auto pt-3">
+                                            <div class="btn btn-outline-secondary w-100 disabled">
+                                                <i class="fas fa-info-circle me-2"></i>
+                                                No Resource Available
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Summary Card -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card summary-card">
+                            <div class="card-body text-center">
+                                <h4 class="text-primary mb-3">
+                                    <i class="fas fa-lightbulb me-2"></i>
+                                    Learning Summary
+                                </h4>
+                                <p class="mb-3">
+                                    You have <strong>@Model.Count</strong> personalized learning suggestions 
+                                    to help you improve your skills and knowledge.
+                                </p>
+                                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                                    <span class="badge badge-info fs-6 px-3 py-2">
+                                        @Model.Count(s => !string.IsNullOrEmpty(s.ResourseLienk)) Resources Available
+                                    </span>
+                                    <span class="badge badge-secondary fs-6 px-3 py-2">
+                                        Generated on @Model.FirstOrDefault()?.SavedAt.ToString("MMM dd, yyyy")
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- No Suggestions Available -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card empty-state-card">
+                            <div class="card-body text-center py-5">
+                                <div class="empty-state-icon mb-4">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                <h4 class="text-muted mb-3">No Suggestions Available</h4>
+                                <p class="text-muted mb-4">
+                                    We couldn't find any learning suggestions at the moment. 
+                                    Complete an assessment to get personalized recommendations.
+                                </p>
+                                <a href="@Url.Action("Index", "Assessment")" class="btn btn-gradient">
+                                    <i class="fas fa-play me-2"></i>
+                                    Take an Assessment
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Action Buttons -->
+            <div class="row mt-4">
+                <div class="col-12 text-center">
+                    <a href="@Url.Action("Index", "Dashboard")" class="btn btn-outline-primary me-3">
+                        <i class="fas fa-home me-2"></i>Back to Dashboard
+                    </a>
+                    <a href="@Url.Action("Index", "Assessment")" class="btn btn-outline-secondary">
+                        <i class="fas fa-list me-2"></i>View Assessments
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
