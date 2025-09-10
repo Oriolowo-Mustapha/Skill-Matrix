@@ -135,5 +135,11 @@ namespace Skill_Matrix.Implementations.Services
 				builder.Append(b.ToString("x2"));
 			return builder.ToString();
 		}
+
+		public async Task<User> GetUser(Guid userId)
+		{
+			var user = await _userRepository.GetByIdAsync(userId);
+			return user;
+		}
 	}
 }

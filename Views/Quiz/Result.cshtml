@@ -46,11 +46,10 @@
                 </div>
             </div>
             <div class="action-buttons">
-                <a asp-controller="Quiz" asp-action="ContinueLearning" class="btn btn-primary">Continue Learning</a>
+                <a  asp-route-QuizResultId="@Model.Id" class="btn btn-primary">Continue Learning</a>
                 <a asp-controller="Quiz" asp-action="ViewResult" asp-route-QuizId="@Model.Id" class="btn btn-secondary">View Result</a>
             </div>
         </div>
     </div>
 </div>
-
 <script src="~/js/Result.js"></script>

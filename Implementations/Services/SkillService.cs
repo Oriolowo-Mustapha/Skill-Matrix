@@ -14,6 +14,7 @@ namespace Skill_Matrix.Implementations.Services
 		private readonly string _clientId;
 		private readonly string _clientSecret;
 		private readonly ISkillRepository _skillRepository;
+		private readonly IQuizRepository _quizRepository;
 		private readonly HttpClient _httpClient;
 		private readonly IMemoryCache _cache;
 
@@ -21,12 +22,13 @@ namespace Skill_Matrix.Implementations.Services
 			ISkillRepository skillRepository,
 			HttpClient httpClient,
 			IConfiguration configuration,
-			IMemoryCache cache)
+			IMemoryCache cache, IQuizRepository quizRepository)
 		{
 			_clientId = configuration["Lightcast:clientId"];
 			_clientSecret = configuration["Lightcast:clientSecret"];
 			_skillRepository = skillRepository;
 			_httpClient = httpClient;
+			_quizRepository = quizRepository;
 			_cache = cache;
 		}
 		public async Task<SkillDto> AddSkillAsync(Guid userId, string skillName, string proficiencyLevel)
@@ -47,8 +49,13 @@ namespace Skill_Matrix.Implementations.Services
 			var existingSkill = await _skillRepository.GetByUserIdandSkillNameAsync(userId, skillName.Trim());
 			if (existingSkill != null)
 			{
-				throw new Exception("Skill Already Added By User Pls Choose Another.");
+				var existResult = await _quizRepository.GetResultBySkillId(userId, existingSkill.Id);
+				if (existResult)
+				{
+					throw new Exception("Skill Already Added By User Pls Choose Another.");
+				}
 			}
+
 
 			// Create new skill
 			var skill = new Skill
@@ -59,7 +66,12 @@ namespace Skill_Matrix.Implementations.Services
 				LastAssessed = DateTime.UtcNow // Set the assessment time when skill is added
 			};
 
-			await _skillRepository.AddAsync(skill);
+			if (existingSkill == null)
+			{
+				await _skillRepository.AddAsync(skill);
+			}
+			await _skillRepository.UpdateAsync(skill);
+
 
 			// Return DTO
 			return new SkillDto
@@ -74,7 +86,7 @@ namespace Skill_Matrix.Implementations.Services
 		// Keep the original method for backward compatibility if needed elsewhere
 		public async Task<SkillDto> AddSkillAsync(Guid userId, string skillName)
 		{
-			return await AddSkillAsync(userId, skillName, "Beginner"); // Default to Beginner if no level specified
+			return await AddSkillAsync(userId, skillName, "Beginner");
 		}
 
 		public async Task DeleteSkillAsync(Guid userId, Guid skillId)

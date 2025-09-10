@@ -68,8 +68,8 @@ public class SuggestionService : ISuggestionService
 		var prompt =
 			$"You are an expert, supportive, and motivating learning guide. " +
 			$"Your purpose is to help a user learn a new skill and address their specific weaknesses. " +
-			$"Based on the following criteria, generate **exactly 3 concise, highly relevant learning suggestions**. " +
-			$"Each suggestion must directly address the user's weaknesses and include a link to a high-quality, free, and accessible online resource (e.g., a video, tutorial, or documentation)." +
+			$"Based on the following criteria, generate ** highly relevant learning suggestions**. " +
+			$"Each suggestion must directly address the user's weaknesses and proficiency level for user skill development include a link to a high-quality, free, and accessible online resource (e.g., a video, tutorial, or documentation)." +
 			$"\n\n**Criteria:**" +
 			$"\n1.  **Skill:** {skillName}" +
 			$"\n2.  **User Proficiency Level:** {ProficiencyLevel}" +
@@ -226,9 +226,9 @@ public class SuggestionService : ISuggestionService
 			suggestions = suggestion ?? new List<Suggestion>();
 
 			// Save into cache
+
 			_memoryCache.Set(cacheKey, suggestions, TimeSpan.FromHours(1));
 		}
-
 		var SuggestDto = suggestions.Select(s => new SuggestionDto
 		{
 			Id = s.Id,

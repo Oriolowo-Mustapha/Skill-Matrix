@@ -2,6 +2,7 @@
 using Skill_Matrix.Data;
 using Skill_Matrix.Entities;
 using Skill_Matrix.Interfaces.Repository;
+using Skill_Matrix.ViewModel;
 
 namespace Skill_Matrix.Implementations.Repository
 {
@@ -19,6 +20,7 @@ namespace Skill_Matrix.Implementations.Repository
 			return await _context.Skills
 				.Where(s => s.UserId == userId)
 				.ToListAsync();
+
 		}
 
 		public async Task<Skill> GetByIdAsync(Guid id)
@@ -49,5 +51,47 @@ namespace Skill_Matrix.Implementations.Repository
 			return await _context.Skills.
 				Where(s => s.UserId == userId && s.SkillName == skillName).FirstOrDefaultAsync();
 		}
+
+		public async Task<List<SkillPerformanceVm>> SkillPerformace(Guid userId)
+		{
+			var skillPerformances = await _context.QuizResults
+			.Include(q => q.Skill)
+			.Where(q => q.UserId == userId)
+			.OrderByDescending(q => q.Score)
+			.GroupBy(q => new { q.SkillId, q.Skill.SkillName, q.Skill.ProficiencyLevel })
+			.Take(5)
+			.Select(g => new SkillPerformanceVm
+			{
+				SkillName = g.Key.SkillName,
+				AverageScore = g.Average(r => r.Score),
+				CurrentLevel = g.Key.ProficiencyLevel
+			})
+			.ToListAsync();
+			return skillPerformances;
+		}
+
+		public async Task<List<SkillViewModel>> UserSkills(Guid userId)
+		{
+			var skills = await _context.Skills
+				.Include(s => s.QuizResults)
+				.Where(s => s.UserId == userId)
+				.Select(s => new SkillViewModel
+				{
+					Name = s.SkillName,
+					ProficiencyLevel = s.ProficiencyLevel,
+					LatestScore = s.QuizResults
+									.OrderByDescending(q => q.DateTaken)
+									.Select(q => (double)q.Score)
+									.FirstOrDefault(),
+					LastAssessed = s.QuizResults
+									.OrderByDescending(q => q.DateTaken)
+									.Select(q => q.DateTaken)
+									.FirstOrDefault()
+				})
+				.ToListAsync();
+
+			return skills;
+		}
+
 	}
 }

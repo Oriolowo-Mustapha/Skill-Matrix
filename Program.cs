@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Npgsql; // ✅ PostgreSQL provider
+using Skill_Matrix.CustomMiddleware;
 using Skill_Matrix.Data;
 using Skill_Matrix.Implementations.Repository;
 using Skill_Matrix.Implementations.Services;
@@ -89,6 +90,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 app.UseSession();
+app.UseMiddleware<RememberMeMiddleware>();
 
 app.Use(async (context, next) =>
 {

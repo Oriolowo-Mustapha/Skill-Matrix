@@ -36,17 +36,14 @@ namespace Skill_Matrix.Controllers
 				}
 
 				var userId = GetCurrentUserId();
-
-
-				var addskill = await _skillService.AddSkillAsync(userId, skillName, proficiencyLevel);
-
 				try
 				{
+					var addskill = await _skillService.AddSkillAsync(userId, skillName, proficiencyLevel);
 					var questions = await _quizService.GetQuizQuestionsAsync(skillName, questionCount, proficiencyLevel);
 
 					if (questions == null || !questions.Any())
 					{
-						TempData["Error"] = $"Unable to load quiz questions for {skillName}. Please try again.";
+						TempData["Error"] = $"Unable to load assessment questions for {skillName}. Please try again.";
 						return RedirectToAction("Index", "Skill");
 					}
 					ViewBag.SkillId = addskill.Id;
@@ -59,13 +56,13 @@ namespace Skill_Matrix.Controllers
 				}
 				catch (Exception ex)
 				{
-					TempData["Error"] = $"Error: {ex.Message}";
+					TempData["Error"] = $"Unable to load assessment questions for {skillName}. Please try again.";
 					return RedirectToAction("Index", "Skill");
 				}
 			}
 			catch (Exception ex)
 			{
-				TempData["Error"] = $"Unable to load Quiz. Please try again. Error: {ex.Message}";
+				TempData["Error"] = $"Unable to load assesment questions for {skillName}. Please try again.";
 				return RedirectToAction("Index", "Skill");
 			}
 		}
@@ -81,15 +78,16 @@ namespace Skill_Matrix.Controllers
 					return RedirectToAction("Login", "User");
 				}
 				var result = await _quizService.SubmitQuizAsync(userId, skillId, answers);
+				await suggestionService.GetSuggestionsAsync(result.Id);
 				if (result == null)
 				{
-					TempData["Error"] = $"Unable to Submit quiz. Please try again.";
+					TempData["Error"] = $"Unable to Submit Assessment. Please try again.";
 				}
 				return View("Result", result);
 			}
 			catch (Exception ex)
 			{
-				TempData["Error"] = $"Unable to Submit Quiz. Please try again.\n{ex}";
+				TempData["Error"] = $"Unable to Submit Assessment. Please try again.";
 				var quiz = _quizService.GetQuizQuestionsFromCache(skillId);
 				return View("TakeQuiz", quiz);
 			}
@@ -117,7 +115,6 @@ namespace Skill_Matrix.Controllers
 					QuizQuestions = Questions,
 					WrongAnswers = WrongAnswers
 				};
-				await suggestionService.GetSuggestionsAsync(Result.Id);
 				return View("ViewResult", result);
 			}
 			catch (Exception ex)

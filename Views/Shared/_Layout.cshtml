@@ -24,39 +24,98 @@
                             <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">About</a>
+                            <a class="nav-link" href="#services">About</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#services">Services</a>
+                            <a class="nav-link" href="#stats">Services</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#contact">Contact</a>
                         </li>
                     </ul>
-                    <div class="user-info">
-                        <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Dashboard</a>
+                    <div class="dashboard-area">
+                        <a class="dashboard-link" asp-area="" asp-controller="User" asp-action="Dashboard">
+                            <span class="dashboard-icon">⚡</span>
+                            <span class="dashboard-text">Dashboard</span>
+                        </a>
                     </div>
                 </div>
             </div>
         </nav>
     </header>
-
     <main role="main">
         @RenderBody()
     </main>
-
-    <footer class="footer shadow-lg">
+    <footer class="footer">
         <div class="container">
             <div class="row">
-                <div class="col-12">
-                    &copy; 2025 - SkillMatrix - Professional Development Platform
-                    <br>
-                    <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy Policy</a>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="footer-section">
+                        <h5 class="footer-title">SkillMatrix</h5>
+                        <p class="footer-description">Empowering professionals with cutting-edge skill development and career advancement tools.</p>
+                        <div class="footer-social">
+                            <a href="#" class="social-link">💼</a>
+                            <a href="#" class="social-link">🐦</a>
+                            <a href="#" class="social-link">📧</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-6 mb-4">
+                    <div class="footer-section">
+                        <h6 class="footer-subtitle">Platform</h6>
+                        <ul class="footer-links">
+                            <li><a href="#">Dashboard</a></li>
+                            <li><a href="#">Skills</a></li>
+                            <li><a href="#">Analytics</a></li>
+                            <li><a href="#">Reports</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-6 mb-4">
+                    <div class="footer-section">
+                        <h6 class="footer-subtitle">Company</h6>
+                        <ul class="footer-links">
+                            <li><a href="#">About Us</a></li>
+                            <li><a href="#">Careers</a></li>
+                            <li><a href="#">Blog</a></li>
+                            <li><a href="#">Press</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6 col-sm-6 mb-4">
+                    <div class="footer-section">
+                        <h6 class="footer-subtitle">Support</h6>
+                        <ul class="footer-links">
+                            <li><a href="#">Help Center</a></li>
+                            <li><a href="#">Contact</a></li>
+                            <li><a href="#">Community</a></li>
+                            <li><a href="#">Status</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6 col-sm-6 mb-4">
+                    <div class="footer-section">
+                        <h6 class="footer-subtitle">Legal</h6>
+                        <ul class="footer-links">
+                            <li><a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a></li>
+                            <li><a href="#">Terms</a></li>
+                            <li><a href="#">Cookies</a></li>
+                            <li><a href="#">GDPR</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <hr class="footer-divider">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="footer-copyright">&copy; 2025 SkillMatrix. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="footer-tagline">Professional Development Platform</p>
                 </div>
             </div>
         </div>
     </footer>
-
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

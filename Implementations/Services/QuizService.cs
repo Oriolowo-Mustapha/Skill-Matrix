@@ -7,6 +7,7 @@ using Skill_Matrix.Interfaces.Repository;
 using Skill_Matrix.Interfaces.Services;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace SkillMatrix.Services
 {
@@ -39,7 +40,9 @@ namespace SkillMatrix.Services
 			 $"Include questions that test deep understanding, such as those related to algorithms, common data structures, or fundamental principles of {skillName}. " +
 			 $"The questions should focus on the 'why' and 'how' rather than just basic syntax. " +
 			 $"Include the correct answer. " +
-			 $"Format the output as a JSON array of objects, where each object has 'question', 'options' (an array of strings), and 'correctAnswer' (the text of the correct option, not just the letter).";
+			 $"Format the output as a JSON array of objects, where each object has 'question', 'options' (an array of strings), and 'correctAnswer' (the text of the correct option, not just the letter)." +
+			 $"Return valid JSON only." +
+			 $"Do not use markdown or trailing commas.";
 
 			var requestBody = new
 			{
@@ -219,14 +222,24 @@ namespace SkillMatrix.Services
 			}
 			else if (cleanedJsonText.StartsWith("```json") && cleanedJsonText.EndsWith("```"))
 			{
-				// Fallback for strict markdown code blocks if the above fails
+				// Remove markdown code block wrappers
 				cleanedJsonText = cleanedJsonText.Substring("```json".Length).Trim();
 				cleanedJsonText = cleanedJsonText.Substring(0, cleanedJsonText.Length - "```".Length).Trim();
 			}
 
+			// 🔹 Clean up trailing commas before ] or }
+			cleanedJsonText = Regex.Replace(cleanedJsonText, @",(\s*[\]}])", "$1");
+
 			try
 			{
-				var quizQuestions = JsonSerializer.Deserialize<List<QuizDto>>(cleanedJsonText, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+				var quizQuestions = JsonSerializer.Deserialize<List<QuizDto>>(
+					cleanedJsonText,
+					new JsonSerializerOptions
+					{
+						PropertyNameCaseInsensitive = true,
+						AllowTrailingCommas = true // ✅ tolerate small JSON mistakes
+					});
+
 				return quizQuestions ?? new List<QuizDto>();
 			}
 			catch (JsonException ex)

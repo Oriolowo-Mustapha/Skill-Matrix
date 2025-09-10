@@ -9,5 +9,6 @@ namespace Skill_Matrix.Interfaces.Services
 		Task<string> LoginAsync(UserLoginDto loginDto);
 		Task<UserProfileDto> GetUserProfileAsync(Guid userId);
 		Task<User> GetUserForAuthentication(UserLoginDto loginDto);
+		Task<User> GetUser(Guid userId);
 	}
 }
