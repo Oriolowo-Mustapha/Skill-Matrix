@@ -1,0 +1,87 @@
+﻿@{
+    Layout = null;
+    var title = ViewData["Title"] ?? "Skill Matrix Dashboard";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Skill Matrix</title>
+
+    @RenderSection("Styles", required: false)
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Chart.js (if needed across pages) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
+    <!-- Dashboard CSS -->
+    <link href="~/css/Dashboard.css" rel="stylesheet" />
+</head>
+<body>
+    <!-- Mobile Toggle Button -->
+    <button class="mobile-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-chart-line"></i> SkillMatrix</h2>
+            <p>Dashboard</p>
+        </div>
+        <!-- Navigation Links -->
+        <div class="sidebar-nav">
+            <div class="nav-item">
+                <a asp-controller="User" asp-action="Dashboard" class="nav-link @(ViewData["Active"] as string == "Overview" ? "active" : "")">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Overview
+                </a>
+            </div>
+            <div class="nav-item">
+                <a asp-controller="User" asp-action="SkillDashBoard" class="nav-link @(ViewData["Active"] as string == "Skills" ? "active" : "")">
+                    <i class="fas fa-cogs"></i>
+                    Skills
+                </a>
+            </div>
+            <div class="nav-item">
+                <a asp-controller="User" asp-action="SuggestionDashBoard" class="nav-link @(ViewData["Active"] as string == "Suggestions" ? "active" : "")">
+                    <i class="fas fa-lightbulb"></i>
+                    Suggestions
+                </a>
+            </div>
+            <div class="nav-item">
+                <a asp-controller="Assessments" asp-action="Index" class="nav-link @(ViewData["Active"] as string == "Assessments" ? "active" : "")">
+                    <i class="fas fa-clipboard-list"></i>
+                    Assessments
+                </a>
+            </div>
+            <div class="nav-item">
+                <a asp-controller="User" asp-action="Profile" class="nav-link @(ViewData["Active"] as string == "Profile" ? "active" : "")">
+                    <i class="fas fa-user"></i>
+                    Profile
+                </a>
+            </div>
+            <div class="nav-item">
+                <a asp-controller="User" asp-action="Logout" class="nav-link">
+                    <i class="fas fa-right-from-bracket"></i>
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        @RenderBody()
+    </main>
+
+    <!-- Scripts -->
+    <script src="~/js/Dashboard.js"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

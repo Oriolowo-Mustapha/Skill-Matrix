@@ -1,9 +1,4 @@
-﻿/**
- * Quiz Navigation and Management System
- * Handles single-question display, navigation, progress tracking, and validation
- */
-
-// Quiz Navigation Module
+﻿// Quiz Navigation Module
 const QuizNavigation = {
     // Quiz state variables
     currentQuestion: 0,

@@ -176,7 +176,7 @@ namespace Skill_Matrix.Controllers
 				return RedirectToAction("Login", "User");
 			}
 
-			var userSkills = _skillRepository.UserSkills(userId);
+			var userSkills = await _skillRepository.UserSkills(userId);
 			return View(userSkills);
 		}
 
@@ -189,7 +189,7 @@ namespace Skill_Matrix.Controllers
 				return RedirectToAction("Login", "User");
 			}
 
-			var userSuggestions = _suggestionRepository.UserSuggestions(userId);
+			var userSuggestions = await _suggestionRepository.UserSuggestions(userId);
 			return View(userSuggestions);
 		}
 
@@ -202,7 +202,7 @@ namespace Skill_Matrix.Controllers
 				return RedirectToAction("Login", "User");
 			}
 
-			var userAssesments = _quizRepository.UserAssessments(userId);
+			var userAssesments = await _quizRepository.UserAssessments(userId);
 			return View(userAssesments);
 		}
 

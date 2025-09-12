@@ -17,7 +17,7 @@
                 @if (!string.IsNullOrEmpty(Context.Session.GetString("UserId")))
                 {
                     <a asp-controller="Skill" asp-action="GetAllSkills" class="btn-hero-primary">➕ Add Skills</a>
-                    <a asp-controller="Dashboard" asp-action="Index" class="btn-hero-secondary">📊 Go to Dashboard</a>
+                    <a asp-controller="User" asp-action="Dashboard" class="btn-hero-secondary">📊 Go to Dashboard</a>
                 }
                 else
                 {

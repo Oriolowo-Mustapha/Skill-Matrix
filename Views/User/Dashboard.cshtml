@@ -1,7 +1,7 @@
 ﻿@model Skill_Matrix.ViewModel.DashBoardViewModel
 @{
     ViewData["Title"] = "Skill Matrix Dashboard";
-    Layout = null;
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
 }
 
 <!DOCTYPE html>
@@ -16,232 +16,175 @@
     <link href="~/css/Dashboard.css" rel="stylesheet" />
 </head>
 <body>
-    <!-- Mobile Toggle Button -->
-    <button class="mobile-toggle" onclick="toggleSidebar()">
-        <i class="fas fa-bars"></i>
-    </button>
-
-    <!-- Sidebar -->
-    <nav class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <h2><i class="fas fa-chart-line"></i> SkillMatrix</h2>
-            <p>Dashboard</p>
+    <div class="dashboard-header">
+        <div class="welcome-text">
+            <h1>Welcome back, @(Model?.Username ?? "User")!</h1>
+            <p class="member-since">Member since @(Model?.MemberSince.ToString("MMMM yyyy") ?? "N/A")</p>
         </div>
-        <!-- Navigation Links -->
-        <div class="sidebar-nav">
-            <div class="nav-item">
-                <a href="#" class="nav-link active">
-                    <i class="fas fa-tachometer-alt"></i>
-                    Overview
-                </a>
-            </div>
-            <div class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fas fa-cogs"></i>
-                    Skills
-                </a>
-            </div>
-            <div class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fas fa-lightbulb"></i>
-                    Suggestions
-                </a>
-            </div>
-            <div class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fas fa-clipboard-list"></i>
-                    Assessments
-                </a>
-            </div>
-            <div class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fas fa-user"></i>
-                    Profile
-                </a>
-            </div>
-            <div class="nav-item">
-                <a asp-controller="User" asp-action="Logout" class="nav-link">
-                    <i class="fas fa-right-from-bracket"></i>
-                    Logout
-                </a>
-            </div>
-        </div>
-    </nav>
+    </div>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Dashboard Header -->
-        <div class="dashboard-header">
-            <div class="welcome-text">
-                <h1>Welcome back, @(Model?.Username ?? "User")!</h1>
-                <p class="member-since">Member since @(Model?.MemberSince.ToString("MMMM yyyy") ?? "N/A")</p>
+    <!-- Key Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-list"></i>
             </div>
+            <div class="stat-value">@(Model?.TotalSkills ?? 0)</div>
+            <div class="stat-label">Total Skills</div>
         </div>
-
-        <!-- Key Stats -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-list"></i>
-                </div>
-                <div class="stat-value">@(Model?.TotalSkills ?? 0)</div>
-                <div class="stat-label">Total Skills</div>
-            </div>
             
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-star"></i>
-                </div>
-                <div class="stat-value">@(Model?.AverageScore.ToString("F1") ?? "0.0")</div>
-                <div class="stat-label">Average Score</div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-star"></i>
             </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-trophy"></i>
-                </div>
-                <div class="stat-value">@(Model?.BestSkill ?? "N/A")</div>
-                <div class="stat-label">Best Skill</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <div class="stat-value">@(Model?.WeakestSkill ?? "N/A")</div>
-                <div class="stat-label">Weakest Skill</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-clipboard-check"></i>
-                </div>
-                <div class="stat-value">@(Model?.TotalAssessments ?? 0)</div>
-                <div class="stat-label">Total Assessments</div>
-            </div>
+            <div class="stat-value">@(Model?.AverageScore.ToString("F1") ?? "0.0")</div>
+            <div class="stat-label">Average Score</div>
         </div>
+            
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <div class="stat-value">@(Model?.BestSkill ?? "N/A")</div>
+            <div class="stat-label">Best Skill</div>
+        </div>
+            
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-value">@(Model?.WeakestSkill ?? "N/A")</div>
+            <div class="stat-label">Weakest Skill</div>
+        </div>
+            
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-clipboard-check"></i>
+            </div>
+            <div class="stat-value">@(Model?.TotalAssessments ?? 0)</div>
+            <div class="stat-label">Total Assessments</div>
+        </div>
+    </div>
 
-        <!-- Recent Assessments Table -->
-        <div class="content-section">
-            <h2 class="section-title">
-                <i class="fas fa-history"></i>
-                Recent Assessments
-            </h2>
-            @if (Model?.RecentAssessments != null && Model.RecentAssessments.Any())
-            {
-                <div style="overflow-x: auto;">
-                    <table class="assessments-table">
-                        <thead>
+    <!-- Recent Assessments Table -->
+    <div class="content-section">
+        <h2 class="section-title">
+            <i class="fas fa-history"></i>
+            Recent Assessments
+        </h2>
+        @if (Model?.RecentAssessments != null && Model.RecentAssessments.Any())
+        {
+            <div style="overflow-x: auto;">
+                <table class="assessments-table">
+                    <thead>
+                        <tr>
+                            <th>Skill</th>
+                            <th>Score</th>
+                            <th>Proficiency Level</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var assessment in Model.RecentAssessments)
+                        {
                             <tr>
-                                <th>Skill</th>
-                                <th>Score</th>
-                                <th>Proficiency Level</th>
-                                <th>Date</th>
+                                <td>@assessment.SkillName</td>
+                                <td><span class="score-badge">@assessment.Score%</span></td>
+                                <td>
+                                    <span class="proficiency-badge proficiency-@assessment.Level.ToLower()">
+                                        @assessment.Level
+                                    </span>
+                                </td>
+                                <td>@assessment.TakenOn.ToString("MMM dd, yyyy")</td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var assessment in Model.RecentAssessments)
-                            {
-                                <tr>
-                                    <td>@assessment.SkillName</td>
-                                    <td><span class="score-badge">@assessment.Score%</span></td>
-                                    <td>
-                                        <span class="proficiency-badge proficiency-@assessment.Level.ToLower()">
-                                            @assessment.Level
-                                        </span>
-                                    </td>
-                                    <td>@assessment.TakenOn.ToString("MMM dd, yyyy")</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <p>No recent assessments available.</p>
+        }
+    </div>
+
+    <!-- Skill Performance Overview -->
+    <div class="content-section">
+        <h2 class="section-title">
+            <i class="fas fa-chart-bar"></i>
+            Skill Performance Overview
+        </h2>
+        @if (Model?.SkillPerformances != null && Model.SkillPerformances.Any())
+        {
+            @foreach (var skill in Model.SkillPerformances)
+            {
+                <div class="skill-item">
+                    <div class="skill-header">
+                        <span class="skill-name">@skill.SkillName</span>
+                        <span class="skill-score">@skill.AverageScore%</span>
+                    </div>
+                    <div class="skill-bar">
+                        <div class="skill-fill" style="width: @(skill.AverageScore)%"></div>
+                    </div>
                 </div>
             }
-            else
-            {
-                <p>No recent assessments available.</p>
-            }
-        </div>
+        }
+        else
+        {
+            <p>No skill performance data available.</p>
+        }
+    </div>
 
-        <!-- Skill Performance Overview -->
-        <div class="content-section">
-            <h2 class="section-title">
-                <i class="fas fa-chart-bar"></i>
-                Skill Performance Overview
-            </h2>
-            @if (Model?.SkillPerformances != null && Model.SkillPerformances.Any())
-            {
-                @foreach (var skill in Model.SkillPerformances)
+    <!-- Suggestions Highlights -->
+    <div class="content-section">
+        <h2 class="section-title">
+            <i class="fas fa-lightbulb"></i>
+            Suggestions Highlights
+        </h2>
+        @if (Model?.TopSuggestions != null && Model.TopSuggestions.Any())
+        {
+            <div class="suggestions-grid">
+                @foreach (var suggestion in Model.TopSuggestions)
                 {
-                    <div class="skill-item">
-                        <div class="skill-header">
-                            <span class="skill-name">@skill.SkillName</span>
-                            <span class="skill-score">@skill.AverageScore%</span>
-                        </div>
-                        <div class="skill-bar">
-                            <div class="skill-fill" style="width: @(skill.AverageScore)%"></div>
-                        </div>
+                    <div class="suggestion-card">
+                        <div class="suggestion-title">@suggestion.SkillName</div>
+                        <div class="suggestion-description">@suggestion.ImprovementTip</div>
                     </div>
                 }
-            }
-            else
-            {
-                <p>No skill performance data available.</p>
-            }
-        </div>
+            </div>
+        }
+        else
+        {
+            <p>No suggestions available.</p>
+        }
+    </div>
 
-        <!-- Suggestions Highlights -->
-        <div class="content-section">
-            <h2 class="section-title">
-                <i class="fas fa-lightbulb"></i>
-                Suggestions Highlights
-            </h2>
-            @if (Model?.TopSuggestions != null && Model.TopSuggestions.Any())
-            {
-                <div class="suggestions-grid">
-                    @foreach (var suggestion in Model.TopSuggestions)
-                    {
-                        <div class="suggestion-card">
-                            <div class="suggestion-title">@suggestion.SkillName</div>
-                            <div class="suggestion-description">@suggestion.ImprovementTip</div>
-                        </div>
-                    }
-                </div>
-            }
-            else
-            {
-                <p>No suggestions available.</p>
-            }
-        </div>
-
-        <!-- Score Trends Chart -->
-        <div class="content-section">
-            <h2 class="section-title">
-                <i class="fas fa-line-chart"></i>
-                Score Trends
-            </h2>
-            @if (Model?.AssessmentTrends != null && Model.AssessmentTrends.Any())
-            {
-              <div class="chart-container">
-                    <canvas id="trendsChart"></canvas>
-                    <script>
-                        var assessmentsData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-                            (Model?.AssessmentTrends ?? new List<Skill_Matrix.ViewModel.AssessmentTrendVm>())
-                                .Select(a => new {
-                                    Score = a.Score,
-                                    Date = a.Date.ToString("MMM dd") // e.g., "Sep 09"
-                                })
-                        ));
-                    </script>
-                </div>
-            }
-            else
-            {
-                <p>No Assessment Results available.</p>
-            }
-        </div>
-    </main>
-    
+    <!-- Score Trends Chart -->
+    <div class="content-section">
+        <h2 class="section-title">
+            <i class="fas fa-line-chart"></i>
+            Score Trends
+        </h2>
+        @if (Model?.AssessmentTrends != null && Model.AssessmentTrends.Any())
+        {
+            <div class="chart-container">
+                <canvas id="trendsChart"></canvas>
+                <script>
+                    var assessmentsData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                        (Model?.AssessmentTrends ?? new List<Skill_Matrix.ViewModel.AssessmentTrendVm>())
+                            .Select(a => new {
+                                Score = a.Score,
+                                Date = a.Date.ToString("MMM dd") // e.g., "Sep 09"
+                            })
+                    ));
+                </script>
+            </div>
+        }
+        else
+        {
+            <p>No Assessment Results available.</p>
+        }
+    </div>
     <script src="~/js/Dashboard.js"></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Npgsql; // ✅ PostgreSQL provider
+using Npgsql;
 using Skill_Matrix.CustomMiddleware;
 using Skill_Matrix.Data;
 using Skill_Matrix.Implementations.Repository;
@@ -10,11 +10,7 @@ using SkillMatrix.Services;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
 builder.Services.AddControllersWithViews();
-
-// ✅ Build PostgreSQL connection string from Render env vars
 string BuildConnectionString(IConfiguration cfg)
 {
 	var host = Environment.GetEnvironmentVariable("DB_HOST");
@@ -38,15 +34,13 @@ string BuildConnectionString(IConfiguration cfg)
 		};
 		return csb.ToString();
 	}
-
-	// fallback for local dev
 	return cfg.GetConnectionString("DefaultConnection");
 }
 
 var connString = BuildConnectionString(builder.Configuration);
 
 builder.Services.AddDbContext<SkillMatrixDbContext>(options =>
-	options.UseNpgsql(connString)); // ✅ switched to PostgreSQL
+	options.UseNpgsql(connString));
 
 // JWT Configuration
 var jwtSettingsSection = builder.Configuration.GetSection("JwtSettings");
@@ -110,7 +104,6 @@ app.MapControllerRoute(
 
 app.Run();
 
-// JWT Settings class
 public class JwtSettings
 {
 	public string SecretKey { get; set; }

@@ -1,0 +1,63 @@
+﻿@model List<Skill_Matrix.ViewModel.SuggestionViewModel>
+@{
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    ViewData["Title"] = "My Suggestions";
+}
+
+@section Styles{
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="~/css/SuggestionDashBoard.css" rel="stylesheet"/>
+}
+
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">My Suggestions</h1>
+        <p class="page-subtitle">Personalized recommendations to enhance your skills</p>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search suggestions by skill name or content...">
+    </div>
+
+    <div class="loading" id="loadingIndicator">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Filtering suggestions...</p>
+    </div>
+
+    <div class="suggestions-grid" id="suggestionsGrid">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var suggestion in Model)
+            {
+                <div class="suggestion-card" data-skill="@suggestion.SkillName?.ToLower()" data-text="@suggestion.SuggestionText?.ToLower()">
+                    <h3 class="skill-name">@suggestion.SkillName</h3>
+                    <p class="suggestion-text">@suggestion.SuggestionText</p>
+                    @if (!string.IsNullOrEmpty(suggestion.RESourceLink))
+                    {
+                        <a href="@suggestion.RESourceLink" target="_blank" class="resource-link" rel="noopener noreferrer">
+                            📚 View Resource
+                        </a>
+                    }
+                    <div class="created-date">
+                         @suggestion.CreatedOn.ToString("MMM dd, yyyy")
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="no-results">
+                <div class="no-results-icon">💡</div>
+                <div class="no-results-text">No suggestions available</div>
+                <div class="no-results-subtext">Check back later for personalized skill recommendations</div>
+            </div>
+        }
+    </div>
+
+    <div class="no-results" id="noResultsMessage" style="display: none;">
+        <div class="no-results-icon">🔍</div>
+        <div class="no-results-text">No suggestions found</div>
+        <div class="no-results-subtext">Try adjusting your search terms</div>
+    </div>
+</div>
+<script src="~/js/SuggestionDashboard.js"></script>
