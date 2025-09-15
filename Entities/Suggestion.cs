@@ -13,10 +13,10 @@ namespace Skill_Matrix.Entities
 		public Guid QuizResultId { get; set; }
 		public QuizResult QuizResult { get; set; }
 
-		[Required, MaxLength(200)]
+		[Required, MaxLength(2000)]
 		public string Suggestions { get; set; }
 
-		[Required, MaxLength(200)]
+		[Required, MaxLength(500)]
 		public string ResourceLink { get; set; }
 
 		public DateTime SavedAt { get; set; } = DateTime.UtcNow;

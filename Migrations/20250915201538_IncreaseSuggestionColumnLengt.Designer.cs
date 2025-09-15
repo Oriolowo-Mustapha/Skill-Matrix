@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Skill_Matrix.Data;
@@ -11,9 +12,11 @@ using Skill_Matrix.Data;
 namespace Skill_Matrix.Migrations
 {
     [DbContext(typeof(SkillMatrixDbContext))]
-    partial class SkillMatrixDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250915201538_IncreaseSuggestionColumnLengt")]
+    partial class IncreaseSuggestionColumnLengt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
