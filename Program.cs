@@ -29,12 +29,11 @@ string BuildConnectionString(IConfiguration cfg)
 			Username = user,
 			Password = password,
 			Database = db,
-			SslMode = SslMode.Require,
-			TrustServerCertificate = true
+			SslMode = SslMode.Require
 		};
 		return csb.ToString();
 	}
-	return cfg.GetConnectionString("DefaultConnection");
+	return cfg.GetConnectionString("DefaultConnection") ?? string.Empty;
 }
 
 var connString = BuildConnectionString(builder.Configuration);
@@ -106,8 +105,8 @@ app.Run();
 
 public class JwtSettings
 {
-	public string SecretKey { get; set; }
-	public string Issuer { get; set; }
-	public string Audience { get; set; }
+	public string? SecretKey { get; set; }
+	public string? Issuer { get; set; }
+	public string? Audience { get; set; }
 	public int ExpiryMinutes { get; set; }
 }

@@ -19,7 +19,6 @@
                 const searchTerm = searchInput.value.toLowerCase().trim();
                 let visibleCount = 0;
 
-                // Show loading indicator
                 loadingIndicator.classList.add('show');
                 
                 setTimeout(() => {
@@ -37,10 +36,8 @@
                         }
                     });
 
-                    // Hide loading indicator
                     loadingIndicator.classList.remove('show');
 
-                    // Show/hide no results message
                     if (visibleCount === 0 && searchTerm !== '') {
                         noResultsMessage.style.display = 'block';
                         suggestionsGrid.style.display = 'none';
@@ -51,7 +48,6 @@
                 }, 200);
             }
 
-            // Add smooth scroll behavior for better UX
             searchInput.addEventListener('focus', function() {
                 this.scrollIntoView({ behavior: 'smooth', block: 'center' });
             });

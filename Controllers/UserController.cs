@@ -23,12 +23,11 @@ namespace Skill_Matrix.Controllers
 			_suggestionRepository = suggestionRepository;
 		}
 
-		[HttpGet]
-		public async Task<IActionResult> Register()
-		{
-			return View();
-		}
-
+		        [HttpGet]
+		        public IActionResult Register()
+		        {
+		            return View();
+		        }
 
 
 		[HttpPost]
@@ -50,12 +49,11 @@ namespace Skill_Matrix.Controllers
 			return View(registerDto);
 		}
 
-		[HttpGet]
-		public async Task<IActionResult> Login()
-		{
-			return View();
-		}
-
+		        [HttpGet]
+		        public IActionResult Login()
+		        {
+		            return View();
+		        }
 		[HttpPost]
 		public async Task<IActionResult> Login(UserLoginDto loginDto, bool rememberMe)
 		{
@@ -205,6 +203,7 @@ namespace Skill_Matrix.Controllers
 			var userAssesments = await _quizRepository.UserAssessments(userId);
 			return View(userAssesments);
 		}
+
 
 		[HttpGet]
 		private Guid GetCurrentUserId()

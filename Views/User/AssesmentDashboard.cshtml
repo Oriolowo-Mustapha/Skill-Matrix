@@ -1,0 +1,74 @@
+﻿@model List<Skill_Matrix.ViewModel.AssessmentViewModel>
+@{
+    ViewData["Title"] = "My Assessments";
+    Layout = "_DashboardLayout";
+}
+
+@section Styles {
+    <link href="~/css/AssesmentDashboard.css" rel="stylesheet"/>
+    <link href="~/css/AssessmentModal.css" rel="stylesheet"/>
+}
+
+<div class="assessment-container">
+    <div class="page-header">
+        <h1 class="page-title">My Assessments</h1>
+        <p class="page-subtitle">Track your progress and skill development</p>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+       <div class="assessment-grid">
+            @foreach (var assessment in Model)
+            {
+                <div class="assessment-card">
+                    <div class="card-header">
+                        <h3 class="skill-name">@assessment.SkillName</h3>
+                        <span class="proficiency-badge proficiency-@assessment.ProficiencyLevel.ToLower()">
+                            @assessment.ProficiencyLevel
+                        </span>
+                    </div>
+
+                    <div class="score-section">
+                        <div class="score-value">
+                            @((int)assessment.Score)<span class="score-percentage">%</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: @(assessment.Score)%"></div>
+                        </div>
+                    </div>
+
+                    <div class="taken-date">
+                        Taken on @assessment.TakenOn.ToString("MMM dd, yyyy")
+                    </div>
+
+                    <div class="card-actions">
+                        <a href="#" class="btn btn-retake" onclick="retakeAssessment('@assessment.SkillId')">
+                            Retake
+                        </a>
+                        <a href="#" class="btn btn-details" onclick="viewDetails('@assessment.Id')">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="no-assessments">
+            <div class="no-assessments-icon">📊</div>
+            <h3>No Assessments Yet</h3>
+            <p>Start your learning journey by taking your first skill assessment.</p>
+            <a href="#" class="btn-primary-action" onclick="takeNewAssessment()">
+                Take Your First Assessment
+            </a>
+        </div>
+    }
+</div>
+
+<div id="assessmentModalContainer"></div>
+
+@section Scripts {
+    <script src="~/js/AssessmentDashboard.js"></script>
+    <script src="~/js/AssessmentModal.js"></script>
+}

@@ -36,6 +36,7 @@ namespace Skill_Matrix.Implementations.Repository
 			return await _context.QuizResults
 				.Where(q => q.Id == QuizResultId)
 				.Include(q => q.Skill)
+                .Include(q => q.QuizBatch)
 				.FirstOrDefaultAsync();
 		}
 
@@ -54,10 +55,11 @@ namespace Skill_Matrix.Implementations.Repository
 		}
 
 
-		public async Task AddQuestionAsync(QuizBatch questions)
+		public async Task<int> AddQuestionAsync(QuizBatch questions)
 		{
 			await _context.QuizBatches.AddRangeAsync(questions);
 			await _context.SaveChangesAsync();
+			return questions.Id;
 		}
 
 		public async Task<List<QuizQuestions>> GetByBatchId(int BatchId)
@@ -163,14 +165,31 @@ namespace Skill_Matrix.Implementations.Repository
 				.OrderByDescending(q => q.DateTaken) // latest first
 				.Select(q => new AssessmentViewModel
 				{
+					Id = q.Id,
+					SkillId = q.SkillId,
 					SkillName = q.Skill.SkillName,
 					Score = q.Score,
 					ProficiencyLevel = q.ProficiencyLevel,
-					TakenOn = q.DateTaken
+					TakenOn = q.DateTaken,
+					TotalQuestions = q.QuizBatch.Questions.Count,
+					NoOfCorrectAnswers = q.NoOfCorrectAnswers,
+					NoOfWrongAnswers = q.NoOfWrongAnswers,
+					RetakeCount = q.RetakeCount,
+					WrongAnswers = q.QuizBatch.WrongAnswers
 				})
 				.ToListAsync();
 
 			return assessments;
+		}
+
+		public async Task<List<QuizQuestions>> GetRandomQuestionsAsync(Guid skillId, int count)
+		{
+			return await _context.QuizQuestions
+				.Where(q => q.QuizBatch.SkillId == skillId)
+				.OrderBy(q => Guid.NewGuid()) // Random order
+				.Take(count)
+				.Include(q => q.Options)
+				.ToListAsync();
 		}
 
 	}

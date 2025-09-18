@@ -1,0 +1,62 @@
+﻿@model Skill_Matrix.ViewModel.ViewResultViewModel
+
+<div class="assessment-modal">
+    <div class="modal-overlay" onclick="closeAssessmentModal()"></div>
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeAssessmentModal()">&times;</button>
+
+        <div class="modal-header">
+            <h2 class="modal-title">@Model.SkillName Assessment</h2>
+            <span class="modal-proficiency @Model.ProficiencyLevel.ToLower()">
+                @Model.ProficiencyLevel
+            </span>
+        </div>
+
+        <div class="modal-body">
+            <div class="assessment-stats">
+                <div class="stat-card">
+                    <h4>Total Questions</h4>
+                    <p>@Model.TotalQuestions</p>
+                </div>
+                <div class="stat-card correct">
+                    <h4>Correct Answers</h4>
+                    <p>@Model.NoOfCorrectAnswers</p>
+                </div>
+                <div class="stat-card wrong">
+                    <h4>Wrong Answers</h4>
+                    <p>@Model.NoOfWrongAnswers</p>
+                </div>
+                <div class="stat-card retake">
+                    <h4>Retake Count</h4>
+                    <p>@Model.RetakeCount</p>
+                </div>
+            </div>
+
+            <div class="assessment-breakdown">
+                <h3>Wrong Answers Breakdown</h3>
+                @if (Model.WrongAnswers != null && Model.WrongAnswers.Any())
+                {
+                    <ul class="wrong-answers-list">
+                        @foreach (var item in Model.WrongAnswers)
+                        {
+                            <li>
+                                <strong>Q:</strong> @item.QuizQuestion.Question <br />
+                                <strong>Your Answer:</strong> @item.AnswerText <br />
+                                <strong>Correct Answer:</strong> @item.QuizQuestion.CorrectAnswer
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="no-wrong">✅ Great job! No wrong answers.</p>
+                }
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-retake" onclick="retakeAssessment('@Model.SkillId')">Retake</button>
+            <button class="btn btn-close" onclick="closeAssessmentModal()">Close</button>
+        </div>
+    </div>
+</div>

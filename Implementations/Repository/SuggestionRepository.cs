@@ -56,5 +56,12 @@ namespace Skill_Matrix.Implementations.Repository
 			return suggestions;
 		}
 
+		public async Task<List<Suggestion>> GetSuggestionsForQuizResultAsync(Guid quizResultId)
+		{
+			return await _context.Suggestions
+				.Where(s => s.QuizResultId == quizResultId)
+				.ToListAsync();
+		}
+
 	}
 }

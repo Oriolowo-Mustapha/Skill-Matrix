@@ -105,7 +105,7 @@ body {
 
 .login__input {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.75rem 3rem 0.75rem 0.75rem;
     border: 1px solid #ccc;
     border-radius: 6px;
     outline: none;
@@ -216,6 +216,18 @@ body {
     50% {
         transform: translateY(-5px);
     }
+}
+
+.form-field {
+    position: relative;
+}
+
+.toggle-password {
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(-50%);
+    cursor: pointer;
 }
 
 /* Responsive Fix */

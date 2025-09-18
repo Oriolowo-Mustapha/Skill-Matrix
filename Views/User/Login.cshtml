@@ -61,7 +61,8 @@
 
                     <div class="form-field full-width">
                         <label asp-for="Password" class="login__label">Password</label>
-                        <input asp-for="Password" type="password" placeholder="Enter your password" class="login__input" />
+                        <input asp-for="Password" type="password" placeholder="Enter your password" class="login__input" id="password-input" />
+                        <span class="toggle-password">👁️</span>
                         <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
 
@@ -83,5 +84,6 @@
             </form>
         </div>
     </div>
+    <script src="~/js/login.js"></script>
 </body>
 </html>

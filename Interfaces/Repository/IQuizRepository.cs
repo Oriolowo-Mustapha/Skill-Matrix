@@ -9,7 +9,7 @@ namespace Skill_Matrix.Interfaces.Repository
 		Task<List<QuizQuestions>> GetBySkillIdAsync(Guid userId, Guid skillId);
 		Task<bool> GetResultBySkillId(Guid userId, Guid skillId);
 		Task<QuizResult> GetLatestByUserAndSkillAsync(Guid userId, Guid skillId);
-		Task AddQuestionAsync(QuizBatch questions);
+		Task<int> AddQuestionAsync(QuizBatch questions);
 		Task<List<QuizResult?>> GetResultByUserId(Guid userId);
 		Task<double> GetAverageByUserId(Guid userId);
 		Task<QuizResult?> GetQuizResultById(Guid QuizResultId);
@@ -19,5 +19,6 @@ namespace Skill_Matrix.Interfaces.Repository
 		Task<List<AssessmentSummaryVm>> RecentAssesment(Guid UserId);
 		Task<List<AssessmentTrendVm>> AssessmentTrends(Guid UserId);
 		Task<List<AssessmentViewModel>> UserAssessments(Guid userId);
+		Task<List<QuizQuestions>> GetRandomQuestionsAsync(Guid skillId, int count);
 	}
 }

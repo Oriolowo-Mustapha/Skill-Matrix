@@ -1,10 +1,9 @@
-﻿// Toggle Sidebar for Mobile
-function toggleSidebar() {
+﻿function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     sidebar.classList.toggle('active');
 }
 
-// Close sidebar when clicking outside on mobile
+
 document.addEventListener('click', function (e) {
     const sidebar = document.getElementById('sidebar');
     const toggle = document.querySelector('.mobile-toggle');
@@ -25,7 +24,6 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    // Extract labels and scores
     const labels = assessmentsData.map(a => a.Date);
     const scores = assessmentsData.map(a => a.Score);
 

@@ -4,6 +4,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
     var skillId = ViewBag.SkillId;
     var skillName = ViewBag.SkillName;
+    var batchId = ViewBag.BatchId;
 }
 
 <link rel="stylesheet" href="~/css/quiz.css" />
@@ -34,8 +35,9 @@
             }
         </div>
         
-        <form asp-action="SubmitQuiz" asp-controller="Quiz" asp-route-skillId=@skillId method="post" id="quizForm">
+        <form asp-action="SubmitQuiz" asp-controller="Quiz" asp-route-skillId=@skillId asp-route-quizBatchId=@batchId method="post" id="quizForm">
             <input type="hidden" name="skillId" value="@skillId" />
+            <input type="hidden" name="quizBatchId" value="@batchId" />
             
             @for (int i = 0; i < Model.Count; i++)
             {
