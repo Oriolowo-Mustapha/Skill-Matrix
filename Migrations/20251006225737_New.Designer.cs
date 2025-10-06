@@ -12,8 +12,8 @@ using Skill_Matrix.Data;
 namespace Skill_Matrix.Migrations
 {
     [DbContext(typeof(SkillMatrixDbContext))]
-    [Migration("20250826141807_Initial")]
-    partial class Initial
+    [Migration("20251006225737_New")]
+    partial class New
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -184,8 +184,8 @@ namespace Skill_Matrix.Migrations
 
                     b.Property<string>("ResourceLink")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<DateTime>("SavedAt")
                         .HasColumnType("timestamp with time zone");
@@ -195,8 +195,8 @@ namespace Skill_Matrix.Migrations
 
                     b.Property<string>("Suggestions")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");

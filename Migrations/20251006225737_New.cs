@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Skill_Matrix.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class New : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -191,8 +191,8 @@ namespace Skill_Matrix.Migrations
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     SkillId = table.Column<Guid>(type: "uuid", nullable: false),
                     QuizResultId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Suggestions = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    ResourceLink = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Suggestions = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
+                    ResourceLink = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     SavedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
