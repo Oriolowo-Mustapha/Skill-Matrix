@@ -4,6 +4,7 @@ namespace Skill_Matrix.ViewModel
 {
 	public class ViewResultViewModel
 	{
+		public Guid Id { get; set; }
 		public Guid SkillId { get; set; }
 		public string SkillName { get; set; }
 		public DateTime DateTaken { get; set; }
