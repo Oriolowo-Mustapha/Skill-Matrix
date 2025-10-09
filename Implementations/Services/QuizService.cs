@@ -29,179 +29,170 @@ namespace SkillMatrix.Services
 			_quizResultRepository = quizResultRepository;
 			_suggestionRepository = suggestionRepository;
 			_httpClient = httpClient;
-			_geminiApiKey = configuration["Gemini:ApiKey"]; // Changed to Gemini API key from appsettings.json
+			_geminiApiKey = configuration["Gemini:ApiKey"];
 			_httpContextAccessor = httpContextAccessor;
 			_cache = cache;
 			_dbContext = dbContext;
 		}
 
-		        public async Task<QuizBatchDto> GetQuizQuestionsAsync(string skillName, int count, string ProficiencyLevel)
-		        {
-		            var prompt = $"Generate {count} multiple-choice questions on the core concepts of {skillName}, " +
-		             $"tailored to a {ProficiencyLevel} level. " +
-		             $"Each question should have 4 options labeled A to D. " +
-		             $"Include questions that test deep understanding, such as those related to algorithms, common data structures, or fundamental principles of {skillName}. " +
-		             $"The questions should focus on the 'why' and 'how' rather than just basic syntax. " +
-		             $"Include the correct answer. " +
-		             $"Format the output as a JSON array of objects, where each object has 'question', 'options' (an array of strings), and 'correctAnswer' (the text of the correct option, not just the letter)." +
-		             $"Return valid JSON only." +
-		             $"Do not use markdown or trailing commas.";
-		
-		            var requestBody = new
-		            {
-		                contents = new[]
-		                {
-		                    new {
-		                        parts = new[]
-		                        {
-		                            new { text = prompt }
-		                        }
-		                    }
-		                },
-		                generationConfig = new
-		                {
-		                    temperature = 0.7,
-		                    topP = 0.95,
-		                    topK = 40,
-		                    maxOutputTokens = 2048
-		                }
-		            };
-		
-		            var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
-		
-		            // Gemini API endpoint for text generation
-		            using var request = new HttpRequestMessage(HttpMethod.Post, $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={_geminiApiKey}");
-		            // No need to add Authorization header for Gemini API key in query parameter
-		            request.Content = content;
-		
-		            var response = await _httpClient.SendAsync(request);
-		            if (!response.IsSuccessStatusCode)
-		            {
-		                var errorContent = await response.Content.ReadAsStringAsync();
-		                throw new Exception($"Failed to fetch quiz questions from Gemini. Status: {response.StatusCode}, Content: {errorContent}");
-		            }
-		
-		            var json = await response.Content.ReadAsStringAsync();
-		            var geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(json); // Changed to GeminiResponse
-		
-		            // Extract the generated text from Gemini's response
-		            var geminiContent = geminiResponse?.candidates?.FirstOrDefault()?.content?.parts?.FirstOrDefault()?.text;
-		            var quizQuestions = await ParseQuizFromJsonAsync(geminiContent ?? string.Empty);
-		            var userId = GetCurrentUserId();
-		            var skill = await _skillRepository.GetByUserIdandSkillNameAsync(userId, skillName);
-		            var batchId = await SaveParsedQuizAsync(userId, skill.Id, quizQuestions);
-		            _cache.Set($"QuizQuestions_{skill.Id}", quizQuestions, TimeSpan.FromMinutes(30));
-		
-		            return new QuizBatchDto { BatchId = batchId, Questions = quizQuestions };
-		        }
-		        public async Task<QuizResultDto> SubmitQuizAsync(Guid userId, Guid skillId, int quizBatchId, List<string> answers)
-		        {
-		            // 1. Get skill and validate
-		            var skill = await _skillRepository.GetByIdAsync(skillId);
-		            if (skill == null || skill.UserId != userId)
-		                throw new Exception("Invalid skill or user.");
-		
-		            // 2. Get quiz questions for the specific batch
-		            var quizQuestions = await _quizResultRepository.GetByBatchId(quizBatchId);
-		            if (quizQuestions == null || !quizQuestions.Any())
-		                throw new Exception("No quiz questions found for this batch.");
-		
-		            if (quizQuestions.Count != answers.Count)
-		                throw new Exception("Number of answers does not match the number of questions.");
-		
-		            // 3. Evaluate answers
-		            int correctCount = 0;
-		            int wrongCount = 0;
-		            var quizResultQuestions = new List<QuizQuestions>();
-		
-		            // Create batch first (so we can use its Id)
-		            var quizBatch = new QuizBatch
-		            {
-		                UserId = userId,
-		                SkillId = skillId,
-		                CreatedAt = DateTime.UtcNow
-		            };
-		
-		            for (int i = 0; i < quizQuestions.Count; i++)
-		            {
-		                var question = quizQuestions[i];
-		                var userAnswer = answers[i];
-		
-		                bool isCorrect = question.CorrectAnswer == userAnswer;
-		                if (isCorrect)
-		                {
-		                    correctCount++;
-		                }
-		                else
-		                {
-		                    wrongCount++;
-		
-		                    // Attach wrong answer to this specific question
-		                    question.WrongAnswers.Add(new WrongAnswers
-		                    {
-		                        AnswerText = userAnswer,
-		                        QuizQuestionId = question.Id,  // FK set
-		                        QuizBatch = quizBatch          // link to batch
-		                    });
-		                }
-		
-		                // Attach this question to batch
-		                quizResultQuestions.Add(question);
-		            }
-		
-		            quizBatch.Questions = quizResultQuestions;
-		
-		            // 4. Calculate score
-		            int score = (int)((correctCount / (double)quizQuestions.Count) * 100);
-		
-		            // 5. Determine proficiency level
-		            string proficiencyLevel = score switch
-		            {
-		                <= 40 => "Beginner",
-		                <= 70 => "Intermediate",
-		                <= 90 => "Advanced",
-		                _ => "Expert"
-		            };
-		
-		            var previousResult = await _quizResultRepository.GetLatestByUserAndSkillAsync(userId, skillId);
-		            int retakeCount = previousResult != null ? previousResult.RetakeCount + 1 : 0;
-		
-		            // 6. Create quiz result
-		            var quizResult = new QuizResult
-		            {
-		                UserId = userId,
-		                SkillId = skillId,
-		                QuizBatch = quizBatch,
-		                Score = score,
-		                ProficiencyLevel = proficiencyLevel,
-		                RetakeCount = retakeCount,
-		                NoOfCorrectAnswers = correctCount,
-		                NoOfWrongAnswers = wrongCount,
-		                DateTaken = DateTime.UtcNow
-		            };
-		
-		            // 7. Update skill
-		            skill.ProficiencyLevel = proficiencyLevel;
-		            skill.LastAssessed = DateTime.UtcNow;
-		
-		            // 8. Save all
-		            await _quizResultRepository.AddAsync(quizResult);
-		            await _skillRepository.UpdateAsync(skill);
-		
-		            // 9. Return DTO
-		            return new QuizResultDto
-		            {
-		                Id = quizResult.Id,
-		                SkillId = skillId,
-		                SkillName = skill.SkillName,
-		                Score = score,
-		                ProficiencyLevel = proficiencyLevel,
-		                DateTaken = quizResult.DateTaken,
-		                NoOfCorrectAnswers = correctCount,
-		                NoOfWrongAnswers = wrongCount,
-		                RetakeCount = retakeCount
-		            };
-		        }
+		public async Task<QuizBatchDto> GetQuizQuestionsAsync(string skillName, int count, string ProficiencyLevel)
+		{
+			var prompt = $"Generate {count} multiple-choice questions on the core concepts of {skillName}, " +
+			 $"tailored to a {ProficiencyLevel} level. " +
+			 $"Each question should have 4 options labeled A to D. " +
+			 $"Include questions that test deep understanding, such as those related to algorithms, common data structures, or fundamental principles of {skillName}. " +
+			 $"The questions should focus on the 'why' and 'how' rather than just basic syntax. " +
+			 $"Include the correct answer. " +
+			 $"Format the output as a JSON array of objects, where each object has 'question', 'options' (an array of strings), and 'correctAnswer' (the text of the correct option, not just the letter)." +
+			 $"Return valid JSON only." +
+			 $"Do not use markdown or trailing commas.";
+
+			var requestBody = new
+			{
+				contents = new[]
+				{
+							new {
+								parts = new[]
+								{
+									new { text = prompt }
+								}
+							}
+						},
+				generationConfig = new
+				{
+					temperature = 0.7,
+					topP = 0.95,
+					topK = 40,
+					maxOutputTokens = 2048
+				}
+			};
+
+			var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
+
+			using var request = new HttpRequestMessage(HttpMethod.Post, $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={_geminiApiKey}");
+			request.Content = content;
+
+			var response = await _httpClient.SendAsync(request);
+			if (!response.IsSuccessStatusCode)
+			{
+				var errorContent = await response.Content.ReadAsStringAsync();
+				throw new Exception($"Failed to fetch quiz questions from Gemini. Status: {response.StatusCode}, Content: {errorContent}");
+			}
+
+			var json = await response.Content.ReadAsStringAsync();
+			var geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(json);
+			var geminiContent = geminiResponse?.candidates?.FirstOrDefault()?.content?.parts?.FirstOrDefault()?.text;
+			var quizQuestions = await ParseQuizFromJsonAsync(geminiContent ?? string.Empty);
+			var userId = GetCurrentUserId();
+			var skill = await _skillRepository.GetByUserIdandSkillNameAsync(userId, skillName);
+			var batchId = await SaveParsedQuizAsync(userId, skill.Id, quizQuestions);
+			_cache.Set($"QuizQuestions_{skill.Id}", quizQuestions, TimeSpan.FromMinutes(30));
+
+			return new QuizBatchDto { BatchId = batchId, Questions = quizQuestions };
+		}
+		public async Task<QuizResultDto> SubmitQuizAsync(Guid userId, Guid skillId, int quizBatchId, List<string> answers)
+		{
+			var skill = await _skillRepository.GetByIdAsync(skillId);
+			if (skill == null || skill.UserId != userId)
+				throw new Exception("Invalid skill or user.");
+
+			var quizQuestions = await _quizResultRepository.GetByBatchId(quizBatchId);
+			if (quizQuestions == null || !quizQuestions.Any())
+				throw new Exception("No quiz questions found for this batch.");
+
+			if (quizQuestions.Count != answers.Count)
+				throw new Exception("Number of answers does not match the number of questions.");
+
+			int correctCount = 0;
+			int wrongCount = 0;
+			var quizResultQuestions = new List<QuizQuestions>();
+
+			var quizBatch = new QuizBatch
+			{
+				UserId = userId,
+				SkillId = skillId,
+				CreatedAt = DateTime.UtcNow
+			};
+
+			for (int i = 0; i < quizQuestions.Count; i++)
+			{
+				var question = quizQuestions[i];
+				var userAnswer = answers[i];
+
+				bool isCorrect = question.CorrectAnswer == userAnswer;
+				if (isCorrect)
+				{
+					correctCount++;
+				}
+				else
+				{
+					wrongCount++;
+
+					question.WrongAnswers.Add(new WrongAnswers
+					{
+						AnswerText = userAnswer,
+						QuizQuestionId = question.Id,
+						QuizBatch = quizBatch
+					});
+				}
+
+				// Attach this question to batch
+				quizResultQuestions.Add(question);
+			}
+
+			quizBatch.Questions = quizResultQuestions;
+
+			// 4. Calculate score
+			int score = (int)((correctCount / (double)quizQuestions.Count) * 100);
+
+			// 5. Determine proficiency level
+			string proficiencyLevel = score switch
+			{
+				<= 40 => "Beginner",
+				<= 70 => "Intermediate",
+				<= 90 => "Advanced",
+				_ => "Expert"
+			};
+
+			var previousResult = await _quizResultRepository.GetLatestByUserAndSkillAsync(userId, skillId);
+			int retakeCount = previousResult != null ? previousResult.RetakeCount + 1 : 0;
+
+			// 6. Create quiz result
+			var quizResult = new QuizResult
+			{
+				UserId = userId,
+				SkillId = skillId,
+				QuizBatch = quizBatch,
+				Score = score,
+				ProficiencyLevel = proficiencyLevel,
+				RetakeCount = retakeCount,
+				NoOfCorrectAnswers = correctCount,
+				NoOfWrongAnswers = wrongCount,
+				DateTaken = DateTime.UtcNow
+			};
+
+			// 7. Update skill
+			skill.ProficiencyLevel = proficiencyLevel;
+			skill.LastAssessed = DateTime.UtcNow;
+
+			// 8. Save all
+			await _quizResultRepository.AddAsync(quizResult);
+			await _skillRepository.UpdateAsync(skill);
+
+			// 9. Return DTO
+			return new QuizResultDto
+			{
+				Id = quizResult.Id,
+				SkillId = skillId,
+				SkillName = skill.SkillName,
+				Score = score,
+				ProficiencyLevel = proficiencyLevel,
+				DateTaken = quizResult.DateTaken,
+				NoOfCorrectAnswers = correctCount,
+				NoOfWrongAnswers = wrongCount,
+				RetakeCount = retakeCount
+			};
+		}
 		public async Task<QuizBatchDto> CreateRetakeQuizAsync(Guid userId, Guid skillId)
 		{
 			var skill = await _skillRepository.GetByIdAsync(skillId);
@@ -210,21 +201,18 @@ namespace SkillMatrix.Services
 			var lastResult = await _quizResultRepository.GetLatestByUserAndSkillAsync(userId, skillId);
 
 			string prompt;
-			int totalQuestions = 10; // Consistent number of questions for retake
+			int totalQuestions = 10;
 
 			if (lastResult == null)
 			{
-				// If no previous quiz, generate a standard beginner quiz using GetQuizQuestionsAsync
 				return await GetQuizQuestionsAsync(skill.SkillName, totalQuestions, "Beginner");
 			}
 
-			// Get suggestions and proficiency from the last result
 			var suggestions = await _suggestionRepository.GetSuggestionsForQuizResultAsync(lastResult.Id);
 			var suggestedTopics = suggestions.Select(s => s.Suggestions).Distinct().ToList();
 			var userProficiency = lastResult.ProficiencyLevel;
 			var lastScore = lastResult.Score;
 
-			// Build a detailed prompt for Gemini based on past performance
 			StringBuilder promptBuilder = new StringBuilder();
 			promptBuilder.Append($"Generate {totalQuestions} multiple-choice questions on the core concepts of {skill.SkillName}, ");
 			promptBuilder.Append($"tailored to a {userProficiency} level. ");

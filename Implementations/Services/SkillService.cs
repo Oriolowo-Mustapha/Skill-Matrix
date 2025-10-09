@@ -57,21 +57,27 @@ namespace Skill_Matrix.Implementations.Services
 			}
 
 
-			// Create new skill
-			var skill = new Skill
+			Skill skill;
+			if (existingSkill != null)
 			{
-				UserId = userId,
-				SkillName = skillName.Trim(),
-				ProficiencyLevel = proficiencyLevel,
-				LastAssessed = DateTime.UtcNow // Set the assessment time when skill is added
-			};
-
-			if (existingSkill == null)
+				// If the skill already exists, update it
+				existingSkill.ProficiencyLevel = proficiencyLevel;
+				existingSkill.LastAssessed = DateTime.UtcNow;
+				await _skillRepository.UpdateAsync(existingSkill);
+				skill = existingSkill;
+			}
+			else
 			{
+				// If the skill doesn't exist, create a new one
+				skill = new Skill
+				{
+					UserId = userId,
+					SkillName = skillName.Trim(),
+					ProficiencyLevel = proficiencyLevel,
+					LastAssessed = DateTime.UtcNow
+				};
 				await _skillRepository.AddAsync(skill);
 			}
-			await _skillRepository.UpdateAsync(skill);
-
 
 			// Return DTO
 			return new SkillDto

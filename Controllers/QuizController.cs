@@ -57,7 +57,8 @@ namespace Skill_Matrix.Controllers
 				}
 				catch (Exception ex)
 				{
-					TempData["Error"] = $"Unable to load assessment questions for {skillName}. Please try again.";
+					TempData["Error"] = $"{ex}";
+					Console.WriteLine(ex);
 					return RedirectToAction("Index", "Skill");
 				}
 			}
@@ -148,20 +149,21 @@ namespace Skill_Matrix.Controllers
 				var BatchId = Result.QuizBatchId;
 				var WrongAnswers = await wrongAnswersRepository.GetByBatchId(BatchId);
 				var Questions = await _quizRepository.GetByBatchId(BatchId);
-				                var result = new ViewResultViewModel()
-				                {
-				                    Id = Result.Id,
-				                    SkillId = Result.Skill.Id,
-				                    SkillName = Result.Skill.SkillName,
-				                    DateTaken = Result.DateTaken,
-				                    TotalQuestions = Questions.Count,
-				                    Score = Result.Score,
-				                    ProficiencyLevel = Result.ProficiencyLevel,
-				                    NoOfCorrectAnswers = Result.NoOfCorrectAnswers,
-				                    NoOfWrongAnswers = Result.NoOfWrongAnswers,
-				                    RetakeCount = Result.RetakeCount,
-				                    WrongAnswers = WrongAnswers
-				                }; return View("ViewResult", result);			}
+				var result = new ViewResultViewModel()
+				{
+					Id = Result.Id,
+					SkillId = Result.Skill.Id,
+					SkillName = Result.Skill.SkillName,
+					DateTaken = Result.DateTaken,
+					TotalQuestions = Questions.Count,
+					Score = Result.Score,
+					ProficiencyLevel = Result.ProficiencyLevel,
+					NoOfCorrectAnswers = Result.NoOfCorrectAnswers,
+					NoOfWrongAnswers = Result.NoOfWrongAnswers,
+					RetakeCount = Result.RetakeCount,
+					WrongAnswers = WrongAnswers
+				}; return View("ViewResult", result);
+			}
 			catch (Exception ex)
 			{
 				TempData["Error"] = $"Unable to fetch result. Please try again.";
