@@ -12,8 +12,8 @@ using Skill_Matrix.Data;
 namespace Skill_Matrix.Migrations
 {
     [DbContext(typeof(SkillMatrixDbContext))]
-    [Migration("20251006225737_New")]
-    partial class New
+    [Migration("20251209140915_New Db")]
+    partial class NewDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

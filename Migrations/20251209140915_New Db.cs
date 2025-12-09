@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Skill_Matrix.Migrations
 {
     /// <inheritdoc />
-    public partial class New : Migration
+    public partial class NewDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
